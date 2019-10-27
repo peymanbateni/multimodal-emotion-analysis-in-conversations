@@ -1,14 +1,13 @@
 import torch
 import pandas as pd
-from skimage import io, transform
 import numpy as np
 import matplotlib.pyplot as plt
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms, utils
 from PIL import Image
 import os
-import torchaudio
 import cv2
+from scipy.io import wavfile
 
 def video_to_tensor(video_file):
     """ Converts a mp4 file into a numpy array"""
@@ -49,7 +48,7 @@ class Utterance(object):
         return video_to_tensor(self.file_path)
 
     def load_audio(self):
-        return
+        return wavfile.read(self.file_path[:-3] + "wav")
 
 
 class MELDDataset(Dataset):
