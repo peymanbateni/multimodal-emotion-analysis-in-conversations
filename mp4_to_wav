@@ -1,0 +1,23 @@
+cd ../MELD.Raw
+
+cd dev_splits_complete
+for filename in ./*
+do
+  ffmpeg -i ${filename%.*}.mp4 ${filename%.*}.wav
+done
+cd ..
+
+cd output_repeated_splits_test
+for filename in ./*
+do
+  ffmpeg -i ${filename%.*}.mp4 ${filename%.*}.wav
+done
+cd ..
+
+cd train_splits
+for filename in ./*
+do
+  ffmpeg -i ${filename%.*}.mp4 ${filename%.*}.wav
+done
+cd ..
+
