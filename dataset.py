@@ -8,6 +8,7 @@ from PIL import Image
 import os
 import cv2
 from scipy.io import wavfile
+import pickle
 
 def video_to_tensor(video_file):
     """ Converts a mp4 file into a numpy array"""
@@ -34,12 +35,13 @@ class Utterance(object):
     """
     Class for representing a single utterance in all 3 modalities
     """
-    def __init__(self, transcript, speaker, emotion, sentiment, file_path):
+    def __init__(self, transcript, speaker, emotion, sentiment, file_path, utt_audio):
         self.transcript = transcript
         self.speaker = speaker
         self.emotion = emotion
         self.sentiment = sentiment
         self.file_path = file_path
+        self.utt_audio = utt_audio
 
     def get_transcript(self):
         return self.transcript
@@ -47,13 +49,10 @@ class Utterance(object):
     def load_video(self):
         return video_to_tensor(self.file_path)
 
-    def load_audio(self):
-        return wavfile.read(self.file_path[:-3] + "wav")
-
 
 class MELDDataset(Dataset):
 
-    def __init__(self, csv_file, root_dir):
+    def __init__(self, csv_file, root_dir, audio_embs):
         self.csv_records = pd.read_csv(csv_file)
         self.root_dir = root_dir
 
@@ -92,13 +91,15 @@ class MELDDataset(Dataset):
             # TODO: Still some issues with parsing the transcript, specifically wrt special symbols
             file_path = "dia{}_utt{}.mp4".format(d_id, u_id)
             file_path = os.path.join(self.root_dir, file_path)
-
+            utt_audio_embed_id = str(d_id) + "_" + str(u_id)
+            utt_audio_embed = audio_embs[utt_audio_embed_id]
             utterance = Utterance(
                 transcript,
                 self.speakers_to_label[speaker],
                 self.emotions_to_label[emotion],
                 self.sentiments_to_label[sentiment],
-                file_path
+                file_path,
+                utt_audio_embed
             )
             self.data.append(utterance)
 
