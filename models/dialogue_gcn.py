@@ -1,6 +1,7 @@
 import torch
 from transformers import *
 from torch import nn
+import numpy as np
 
 class DialogueGCNC(nn.Module):
 
@@ -11,14 +12,19 @@ class DialogueGCNC(nn.Module):
 #        self.audio_W = nn.Linear(config.audio_in_dim, config.audio_out_dim, bias=True)
 #        self.vis_W = nn.Linear(config.vis_in_dim, config.vis_out_dim, bias=True)
         self.relu = torch.relu
-        self.gc1 = GraphConvolution(nfeat, nhid)
-        self.gc2 = GraphConvolution(nhid, nclass)
-        self.context_window_size = config.context_window_size
-        self.edge_attn = nn.Linear(self.utt_embed_size, self.utt_embed_size)
+        self.pred_rel = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
+        self.suc_rel = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
+        self.same_speak_rel = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
+        self.diff_speak_rel = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
+        self.att_window_size = config.att_window_size
+        self.edge_att_weights = nn.Linear(self.utt_embed_size, self.utt_embed_size, bias=False)
+        self.w_aggr = nn.Parameter(self.utt_embed_size, self.utt_embed_size)
 
     def forward(self, x, adj):
         indept_embeds = self.embed_text(x)
         context_embeds = self.context_encoder(indept_embeds)[0]
+        attn, relation_matrices = self.construct_edges_relations(context_embeds)
+        pred_adj, suc_adj, same_speak_adj, diff_adj_matrix = relation_matrices
         x = F.relu(self.gc1(x, adj))
         x = self.gc2(x, adj)
         return F.log_softmax(x, dim=1)
@@ -30,13 +36,35 @@ class DialogueGCNC(nn.Module):
         #   G - dimention of Glove embeddings
         return self.text_encoder(text)[0]
 
-    def construct_edges(self, ut_embs, speaker ):
+    def construct_edges_relations(self, ut_embs, speaker_ids):
         # ut_embs is a tensor of size N x D
         #   N - number of utterances
         #   D - dimention of utterance embedding
         # speaker is a list of size N corresponding
         #   to speaker ids for each utterance
-        N = len(ut_embs)
-        for i in range(N):
-            start_idx = max(i - self.edge_window, 0)
-            end_idx = min(i + self.edge_window, N)
+        pad = torch.zeros(self.att_window_size, self.utt_embed_size)
+        ut_embs_padded = torch.cat((pad, ut_embs, pad), 0)
+        ut_embs_fat = torch.zeros(len(ut_embs), 2 * self.att_window_size, self.utt_embed_size)
+        for i in range(len(ut_embs)):
+            ut_embs_fat[i, :, :] = ut_embs_padded[i+self.att_window_size:i+self.att_window_size*2,:]
+        raw_attn = self.edge_att_weights(ut_embs_fat)
+        ut_embs = ut_embs.unsqueeze(2)
+        raw_attn = torch.matmul(raw_attn, ut_embs)
+        attn = torch.softmax(raw_attn, dim=1)
+        relation_matrices = self.build_relation_matrices(ut_embs, speaker_ids)
+        return attn, relation_matrices
+
+    def build_relation_matrices(self, ut_embs, speaker_ids):
+        num_utt = len(ut_embs)
+        num_speakers = len(np.unique(speaker_ids))
+
+        pred_adj = torch.ones(num_utt, num_utt).triu(0)
+        suc_adj = torch.ones(num_utt, num_utt).tril(-1)
+        same_speak_adj = torch.zeros(num_utt, num_utt)
+        for i in range(num_speakers):
+            same_speak_indices = speaker_ids == i
+            same_adj_matrix[same_speak_indices] = same_speak_indices.long()
+        diff_adj_matrix = 1 - same_adj_matrix.byte()
+        for j in range(num_utt):
+            
+        return pred_adj, suc_adj, same_speak_adj, diff_adj_matrix.long()
