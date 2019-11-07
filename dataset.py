@@ -103,7 +103,7 @@ class MELDDataset(Dataset):
 
     def __init__(self, csv_file, root_dir, audio_embs):
         self.csv_records = pd.read_csv(csv_file)
-        self.root_dir = root_dir
+        self.root_dir = os.path.abspath(root_dir)
 
         speaker_set = set(self.csv_records.loc[:, "Speaker"].values.tolist())
         emotion_set = set(self.csv_records.loc[:, "Emotion"].values.tolist())
