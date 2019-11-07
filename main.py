@@ -33,8 +33,8 @@ train_audio_emb, val_audio_emb, test_audio_emb = pickle.load(open(audio_embed_pa
 #print(utterance.load_audio()[1].shape)
 #print(utterance.load_video().shape)
 
-val_dataset = MELDDataset("../MELD.Raw/dev_sent_emo.csv", "/MELD.Raw/dev_splits_complete/", val_audio_emb)
-train_dataset = MELDDataset("../MELD.Raw/train_sent_emo.csv", "/MELD.Raw/train_splits/", train_audio_emb)
+val_dataset = MELDDataset("../MELD.Raw/dev_sent_emo.csv", "../MELD.Raw/dev_splits_complete/", val_audio_emb)
+train_dataset = MELDDataset("../MELD.Raw/train_sent_emo.csv", "../MELD.Raw/train_splits/", train_audio_emb)
 #utterance = Utterance("", 1, 1, 1, "../MELD.Raw/dev_splits_complete/dia0_utt0.mp4", None)
 #print(utterance.load_video().shape)
 #dataset_loader.load_image("../MELD.Raw/image.png")
@@ -42,7 +42,7 @@ train_dataset = MELDDataset("../MELD.Raw/train_sent_emo.csv", "/MELD.Raw/train_s
 def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentiment, train_data_loader, val_data_loader, epochs=5):
 
     for epoch in range(epochs):
-        
+
         model = model.train()
         loss_acc = 0
         total_epoch_loss = 0
@@ -74,7 +74,7 @@ def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentimen
             'loss': total_epoch_loss
             },  "model_saves/" + model_name + "_epoch" + str(epoch) +".pt")
 
-        
+
 def train_step(model, input, target, loss_emotion, loss_sentiment, optimiser):
     """Trains model for one batch of data."""
     optimiser.zero_grad()
