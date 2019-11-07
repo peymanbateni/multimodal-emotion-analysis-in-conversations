@@ -69,6 +69,12 @@ class Utterance(object):
         """
         return video_to_tensor(self.file_path)
 
+    def load_audio(self):
+        """
+        Returns the Audio embeddings.
+        """
+        return self.utt_audio
+
 
 class MELDDataset(Dataset):
     """
@@ -127,9 +133,9 @@ class MELDDataset(Dataset):
             utt_audio_embed = audio_embs[utt_audio_embed_id]
             utterance = Utterance(
                 transcript,
-                self.speakers_to_label[speaker],
-                self.emotions_to_label[emotion],
-                self.sentiments_to_label[sentiment],
+                self.speaker_mapping[speaker],
+                self.emotion_mapping[emotion],
+                self.sentiment_mapping[sentiment],
                 file_path,
                 utt_audio_embed
             )
