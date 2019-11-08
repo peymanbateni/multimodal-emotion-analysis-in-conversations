@@ -30,12 +30,51 @@ def video_to_tensor(video_file):
     cap.release()
     return torch.tensor(buf)
 
+class Dialogue(object):
+    """
+    Class for representing a dialogue as a list of utterances
+    """
+
+    def __init__(self, id, utterances):
+        self.dialogue_id = id
+        self.utterances = utterances
+
+    def get_transcripts(self):
+        return [utterance.get_transcript() for utterance in self.utterances]
+
+    def get_videos(self):
+        return [utterance.load_video for utterance in self.utterances]
+
+    def get_audios(self):
+        return [utterance.load_audio for utterance in self.utterances]
+
+    def get_speakers(self):
+        return [utterances.speaker for utterance in self.utterances]
+
+    def get_labels(self):
+        emotions = [utterance.emotion for utterance in self.utterances]
+        sentiment = [utterance.sentiment for utterance in self.utterances]
+        return (emotions, sentiment)
+
+    def get_inputs(self):
+        transcripts = self.get_transcripts()
+        video = self.get_videos()
+        audio = self.get_audios()
+        speaker = self.get_speakers()
+
+        return (transcript, video, audio, speaker)
+
+    def get_data(self):
+        return (self.get_inputs(), self.get_labels())
+
 
 class Utterance(object):
     """
     Class for representing a single utterance in all 3 modalities
     """
-    def __init__(self, transcript, speaker, emotion, sentiment, file_path, utt_audio):
+    def __init__(self, dialgoue_id, utterance_id, transcript, speaker, emotion, sentiment, file_path, utt_audio):
+        self.dialogue_id = dialogue_id
+        self.utterance_id = utterance_id
         self.transcript = transcript
         self.speaker = speaker
         self.emotion = emotion
@@ -121,17 +160,21 @@ class MELDDataset(Dataset):
 
 #        print(self.csv_records.iloc[0:10,:])
 
-        self.data = []
+        dialogues = {}
         for record in self.csv_records.loc[:].values:
 #            print(record)
             id, transcript, speaker, emotion, sentiment, d_id, u_id, _, _, _, _ = record
 
+            if not dialogues[d_id]:
+                dialogue[d_id] = []
             # TODO: Still some issues with parsing the transcript, specifically wrt special symbols
             file_path = "dia{}_utt{}.mp4".format(d_id, u_id)
             file_path = os.path.join(self.root_dir, file_path)
             utt_audio_embed_id = str(d_id) + "_" + str(u_id)
             utt_audio_embed = audio_embs[utt_audio_embed_id]
             utterance = Utterance(
+                d_id,
+                u_id,
                 transcript,
                 self.speaker_mapping[speaker],
                 self.emotion_mapping[emotion],
@@ -139,28 +182,20 @@ class MELDDataset(Dataset):
                 file_path,
                 utt_audio_embed
             )
-            self.data.append(utterance)
+            dialogues[d_id].append(utterance)
+
+        self.data = []
+        for d_id, utterances in dialogues.items():
+            # Assumes no gaps in dialogue id
+            # Assumes no gaps in utterance ids
+            utteraences = utterances.sort(key=lambda x: x.utterance_id)
+            self.data.append(Dialogue(d_id, utterances))
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, idx):
-        utterances = self.data[idx]
-        if not isinstance(utterances, list):
-            # only single utterance
-            input = ([utterances.get_transcript()], [utterances.load_video()], [utterances.load_audio()], [utterances.get_speaker()])
-            label = utterances.get_label()
-            return input, label
-        else:
-            transcripts = [utterance.get_transcript() for utterance in utterances]
-            video = [utterance.load_video() for utterance in utterances]
-            audio = [utterance.load_audio() for utterance in utterances]
-            emotion_labels = [utterance.get_label()[0] for utterance in utterances]
-            sentiment_labels = [utterance.get_label()[1] for utterance in utterances]
-            speakers = [utterance.get_speaker() for utterance in utterances]
-        input = (transcripts, video, audio, speakers)
-        labels = (emotion_labels, sentiment_labels)
-        return input, labels
+        return self.data[idx].get_data()
 
     def load_sample_transcript(self, idx):
         return self.data[idx].get_transcript()
