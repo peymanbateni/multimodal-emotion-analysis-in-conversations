@@ -43,13 +43,13 @@ class Dialogue(object):
         return [utterance.get_transcript() for utterance in self.utterances]
 
     def get_videos(self):
-        return [utterance.load_video for utterance in self.utterances]
+        return [utterance.load_video() for utterance in self.utterances]
 
     def get_audios(self):
-        return [utterance.load_audio for utterance in self.utterances]
+        return [utterance.load_audio() for utterance in self.utterances]
 
     def get_speakers(self):
-        return [utterances.speaker for utterance in self.utterances]
+        return [utterance.speaker for utterance in self.utterances]
 
     def get_labels(self):
         emotions = [utterance.emotion for utterance in self.utterances]
@@ -62,7 +62,7 @@ class Dialogue(object):
         audio = self.get_audios()
         speaker = self.get_speakers()
 
-        return (transcript, video, audio, speaker)
+        return (transcripts, video, audio, speaker)
 
     def get_data(self):
         return (self.get_inputs(), self.get_labels())
@@ -72,7 +72,7 @@ class Utterance(object):
     """
     Class for representing a single utterance in all 3 modalities
     """
-    def __init__(self, dialgoue_id, utterance_id, transcript, speaker, emotion, sentiment, file_path, utt_audio):
+    def __init__(self, dialogue_id, utterance_id, transcript, speaker, emotion, sentiment, file_path, utt_audio):
         self.dialogue_id = dialogue_id
         self.utterance_id = utterance_id
         self.transcript = transcript
@@ -165,8 +165,8 @@ class MELDDataset(Dataset):
 #            print(record)
             id, transcript, speaker, emotion, sentiment, d_id, u_id, _, _, _, _ = record
 
-            if not dialogues[d_id]:
-                dialogue[d_id] = []
+            if d_id not in dialogues.keys():
+                dialogues[d_id] = []
             # TODO: Still some issues with parsing the transcript, specifically wrt special symbols
             file_path = "dia{}_utt{}.mp4".format(d_id, u_id)
             file_path = os.path.join(self.root_dir, file_path)

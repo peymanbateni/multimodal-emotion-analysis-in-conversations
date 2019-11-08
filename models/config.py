@@ -1,7 +1,7 @@
 
 class Config:
     def __init__(self):
-        self.text_in_dim = 300
+        self.text_in_dim = 768
         self.text_out_dim = 300
         self.context_in_dim = 300
         self.context_out_dim = 300

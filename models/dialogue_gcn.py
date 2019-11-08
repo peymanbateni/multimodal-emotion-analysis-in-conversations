@@ -15,7 +15,7 @@ class DialogueGCN(nn.Module):
         self.att_window_size = config.att_window_size
         self.utt_embed_size = config.utt_embed_size
         self.text_encoder = nn.GRU(config.text_in_dim, config.text_out_dim, bidirectional=True, batch_first=True)
-        self.context_encoder = nn.GRU(config.context_in_dim, config.context_out_dim, bidirectional=True, batch_first=True)
+        self.context_encoder = nn.GRU(config.context_in_dim * 2, config.context_out_dim, bidirectional=True, batch_first=True)
 #        self.audio_W = nn.Linear(config.audio_in_dim, config.audio_out_dim, bias=True)
 #        self.vis_W = nn.Linear(config.vis_in_dim, config.vis_out_dim, bias=True)
         self.relu = torch.relu
@@ -31,6 +31,7 @@ class DialogueGCN(nn.Module):
     def forward(self, x):
         transcripts, video, audio, speakers = x
         indept_embeds = self.embed_text(transcripts)
+        print(indept_embeds[0].size())
         context_embeds = self.context_encoder(indept_embeds)[0]
         attn, relation_matrices = self.construct_edges_relations(context_embeds, speakers)
         pred_adj, suc_adj, same_speak_adj, diff_adj_matrix = relation_matrices
@@ -49,13 +50,19 @@ class DialogueGCN(nn.Module):
         #   G - dimention of Glove embeddings
         lengths = []
         for i, utt in enumerate(texts):
-            input_ids = torch.tensor([self.tokenizer.encode(utt)])
+            # TODO: Fix UTT bug
+            input_ids = torch.tensor([self.tokenizer.encode(utt[0])])
             all_hidden_states, all_attentions = self.bert(input_ids)[-2:]
-            texts[i] = all_hidden_states
-            lengths.append(lengths)
+            texts[i] = all_hidden_states.squeeze(0)
+            lengths.append(len(all_hidden_states))
         texts = pad_sequence(texts, batch_first=True)
-        texts = pack_padded_sequence(texts, lengths=lengths, batch_first=True, enforce_sorted=False)
-        return self.text_encoder(text)[0]
+        lengths = torch.LongTensor(lengths)
+        lengths_sorted, sorted_idx = lengths.sort(descending=True)
+        texts = texts[sorted_idx]
+        print(texts.size())
+        texts = pack_padded_sequence(texts, lengths=lengths, batch_first=True)
+        encoded_text = self.text_encoder(texts)[0]
+        return pad_packed_sequence(encoded_text, batch_first=True)
 
     def construct_edges_relations(self, ut_embs, speaker_ids):
         # ut_embs is a tensor of size N x D
