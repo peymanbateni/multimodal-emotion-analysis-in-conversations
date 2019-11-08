@@ -114,16 +114,16 @@ class MELDDataset(Dataset):
         self.emotion_mapping = {emotion: id for id, emotion in enumerate(emotion_set)}
         self.sentiment_mapping = {sentiment: id for id, sentiment in enumerate(sentiment_set)}
 
-        print("Speaker mapping: {}".format(self.speaker_mapping))
-        print("Emotion mapping: {}".format(self.emotion_mapping))
-        print("Sentiment mapping: {}".format(self.sentiment_mapping))
+#        print("Speaker mapping: {}".format(self.speaker_mapping))
+#        print("Emotion mapping: {}".format(self.emotion_mapping))
+#        print("Sentiment mapping: {}".format(self.sentiment_mapping))
         #print([self.speakers_to_label[key] for key in self.csv_records.loc[:, "Speaker"].values.tolist()])
 
-        print(self.csv_records.iloc[0:10,:])
+#        print(self.csv_records.iloc[0:10,:])
 
         self.data = []
         for record in self.csv_records.loc[:].values:
-            print(record)
+#            print(record)
             id, transcript, speaker, emotion, sentiment, d_id, u_id, _, _, _, _ = record
 
             # TODO: Still some issues with parsing the transcript, specifically wrt special symbols
@@ -148,7 +148,7 @@ class MELDDataset(Dataset):
         utterances = self.data[idx]
         if not isinstance(utterances, list):
             # only single utterance
-            input = ([utterances.get_transcript()], [utterances.load_video()], [utterances.load_audio()])
+            input = ([utterances.get_transcript()], [utterances.load_video()], [utterances.load_audio()], [utterances.get_speaker()])
             label = utterances.get_label()
             return input, label
         else:
@@ -157,8 +157,8 @@ class MELDDataset(Dataset):
             audio = [utterance.load_audio() for utterance in utterances]
             emotion_labels = [utterance.get_label()[0] for utterance in utterances]
             sentiment_labels = [utterance.get_label()[1] for utterance in utterances]
-
-        input = (transcripts, video, audio)
+            speakers = [utterance.get_speaker() for utterance in utterances]
+        input = (transcripts, video, audio, speakers)
         labels = (emotion_labels, sentiment_labels)
         return input, labels
 

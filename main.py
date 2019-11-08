@@ -5,6 +5,8 @@ from dataset import MELDDataset, Utterance
 import pickle
 from dummy_model import DummyModel
 from torch.utils.data import DataLoader
+from models.config import Config
+from models.dialogue_gcn import DialogueGCN
 
 #audio_embed_path = "../MELD.Features.Models/features/audio_embeddings_feature_selection_emotion.pkl"
 audio_embed_path = "../MELD.Raw/audio_embeddings_feature_selection_sentiment.pkl"
@@ -39,6 +41,7 @@ train_dataset = MELDDataset("../MELD.Raw/train_sent_emo.csv", "../MELD.Raw/train
 #print(utterance.load_video().shape)
 #dataset_loader.load_image("../MELD.Raw/image.png")
 
+
 def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentiment, train_data_loader, val_data_loader, epochs=5):
 
     for epoch in range(epochs):
@@ -47,6 +50,8 @@ def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentimen
         loss_acc = 0
         total_epoch_loss = 0
         for i, (batch_input, batch_labels) in enumerate(train_data_loader):
+            print(batch_input)
+            print(len(batch_input))
             batch_loss = train_step(model, batch_input, batch_labels, loss_emotion, loss_sentiment, optimiser)
             loss_acc += batch_loss
             total_epoch_loss += batch_loss
@@ -94,12 +99,17 @@ def validate_step(model, input, target):
     sentiment_accuracy_acc = torch.eq(output_labels_emotion, target[1]).sum()
     return emotion_accuracy_acc, sentiment_accuracy_acc, target[0].size(0)
 
-dumb_model = DummyModel()
+config = Config()
 emotion_criterion = nn.CrossEntropyLoss()
 sentiment_criterion = nn.CrossEntropyLoss()
-optimisation_unit = optim.Adam(dumb_model.parameters(), lr=0.001)
 model_name = "Dumb_Model"
-train_loader = DataLoader(train_dataset, batch_size=10, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=10, shuffle=True)
+train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=1, shuffle=True)
 
-train_and_validate(model_name, dumb_model, optimisation_unit, emotion_criterion, sentiment_criterion, train_loader, val_loader)
+if config.use_dummy:
+    model = DummyModel()
+else:
+    model = DialogueGCN(config)
+
+optimisation_unit = optim.Adam(model.parameters(), lr=0.001)
+train_and_validate(model_name, model, optimisation_unit, emotion_criterion, sentiment_criterion, train_loader, val_loader)

@@ -1,7 +1,7 @@
 import torch
 import pickle
 from dataset import MELDDataset
-from models.visual_features import detect_faces_cascade, detect_faces_mtcnn
+#from models.visual_features import detect_faces_cascade, detect_faces_mtcnn
 
 """
 File for testing the visual features module
@@ -18,4 +18,6 @@ dataset = MELDDataset("../MELD.Raw/dev_sent_emo.csv", "../MELD.Raw/dev_splits_co
 
 video = dataset[2][0][1][0]
 
-detect_faces_cascade(video, cascade_path, display_images=True)
+print(dataset[2][0])
+
+#detect_faces_cascade(video, cascade_path, display_images=True)

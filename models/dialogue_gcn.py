@@ -1,12 +1,16 @@
 import torch
-from transformers import *
 from torch import nn
 import numpy as np
+from models.dialogue_gcn_cell import GraphConvolution
+from torch.nn.parameter import Parameter
 
-class DialogueGCNC(nn.Module):
+class DialogueGCN(nn.Module):
 
     def __init__(self, config):
-        super(DialogueGCNCell, self).__init__()
+        super(DialogueGCN, self).__init__()
+
+        self.att_window_size = config.att_window_size
+        self.utt_embed_size = config.utt_embed_size
         self.text_encoder = nn.GRU(config.text_in_dim, config.text_out_dim, bidirectional=True, batch_first=True)
         self.context_encoder = nn.GRU(config.context_in_dim, config.context_out_dim, bidirectional=True, batch_first=True)
 #        self.audio_W = nn.Linear(config.audio_in_dim, config.audio_out_dim, bias=True)
@@ -16,20 +20,21 @@ class DialogueGCNC(nn.Module):
         self.suc_rel = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
         self.same_speak_rel = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
         self.diff_speak_rel = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
-        self.att_window_size = config.att_window_size
         self.edge_att_weights = nn.Linear(self.utt_embed_size, self.utt_embed_size, bias=False)
-        self.w_aggr = nn.Parameter(self.utt_embed_size, self.utt_embed_size)
+        self.w_aggr = nn.Parameter(torch.FloatTensor(self.utt_embed_size, self.utt_embed_size))
 
-    def forward(self, x, adj):
-        indept_embeds = self.embed_text(x)
+
+    def forward(self, x):
+        transcripts, video, audio, speakers = x
+        indept_embeds = self.embed_text(transcripts)
         context_embeds = self.context_encoder(indept_embeds)[0]
-        attn, relation_matrices = self.construct_edges_relations(context_embeds)
+        attn, relation_matrices = self.construct_edges_relations(context_embeds, speakers)
         pred_adj, suc_adj, same_speak_adj, diff_adj_matrix = relation_matrices
         h = self.pred_rel(x, adj)
         h += self.suc_rel(x, adj)
         h += self.same_speak_rel(x, adj)
         h += self.diff_speak_rel(x, adj)
-
+        h = torch.relu(h + torch.matmul(raw_attn, context_embeds))
         x = self.gc2(x, adj)
         return F.log_softmax(x, dim=1)
 

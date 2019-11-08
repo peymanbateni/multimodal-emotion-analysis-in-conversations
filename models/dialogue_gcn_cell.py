@@ -1,8 +1,9 @@
 import torch
-from transformers import *
 from torch import nn
+from torch.nn.parameter import Parameter
+import math
 
-class GraphConvolution(Module):
+class GraphConvolution(nn.Module):
     """
     Simple GCN layer, similar to https://arxiv.org/abs/1609.02907
     """
