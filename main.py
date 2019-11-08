@@ -50,8 +50,6 @@ def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentimen
         loss_acc = 0
         total_epoch_loss = 0
         for i, (batch_input, batch_labels) in enumerate(train_data_loader):
-            print(batch_input)
-            print(len(batch_input))
             batch_loss = train_step(model, batch_input, batch_labels, loss_emotion, loss_sentiment, optimiser)
             loss_acc += batch_loss
             total_epoch_loss += batch_loss

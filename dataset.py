@@ -49,7 +49,7 @@ class Dialogue(object):
         return [utterance.load_audio() for utterance in self.utterances]
 
     def get_speakers(self):
-        return [utterance.speaker for utterance in self.utterances]
+        return torch.LongTensor([utterance.speaker for utterance in self.utterances])
 
     def get_labels(self):
         emotions = [utterance.emotion for utterance in self.utterances]
