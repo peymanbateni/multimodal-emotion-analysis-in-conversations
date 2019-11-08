@@ -3,6 +3,9 @@ from torch import nn
 import numpy as np
 from models.dialogue_gcn_cell import GraphConvolution
 from torch.nn.parameter import Parameter
+from transformers import BertModel, BertTokenizer
+from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence, pad_packed_sequence, PackedSequence
+
 
 class DialogueGCN(nn.Module):
 
@@ -22,7 +25,8 @@ class DialogueGCN(nn.Module):
         self.diff_speak_rel = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
         self.edge_att_weights = nn.Linear(self.utt_embed_size, self.utt_embed_size, bias=False)
         self.w_aggr = nn.Parameter(torch.FloatTensor(self.utt_embed_size, self.utt_embed_size))
-
+        self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+        self.bert = BertModel.from_pretrained('bert-base-uncased')
 
     def forward(self, x):
         transcripts, video, audio, speakers = x
@@ -38,11 +42,19 @@ class DialogueGCN(nn.Module):
         x = self.gc2(x, adj)
         return F.log_softmax(x, dim=1)
 
-    def embed_text(self, text):
+    def embed_text(self, texts):
         # Input is a tensor of size N x L x G
         #   N - number of utterances
         #   L - length of longest (in # of words) utterance
         #   G - dimention of Glove embeddings
+        lengths = []
+        for i, utt in enumerate(texts):
+            input_ids = torch.tensor([self.tokenizer.encode(utt)])
+            all_hidden_states, all_attentions = self.bert(input_ids)[-2:]
+            texts[i] = all_hidden_states
+            lengths.append(lengths)
+        texts = pad_sequence(texts, batch_first=True)
+        texts = pack_padded_sequence(texts, lengths=lengths, batch_first=True, enforce_sorted=False)
         return self.text_encoder(text)[0]
 
     def construct_edges_relations(self, ut_embs, speaker_ids):
