@@ -34,29 +34,72 @@ class Dialogue(object):
     """
     Class for representing a dialogue as a list of utterances
     """
-
     def __init__(self, id, utterances):
         self.dialogue_id = id
         self.utterances = utterances
+        self.reparameterize_speakers()
+
+    def reparameterize_speakers(self):
+        """
+        Method for reparameterizing speakers to the specific dialogue. Eg:
+            speaker_ids (1, 3, 4) -> (0, 1, 2)
+        """
+        speaker_map = {}
+        id = 0
+        for utterance in self.utterances:
+            if utterance.speaker not in speaker_map.keys():
+                speaker_map[utterance.speaker] = id
+                id += 1
+
+        self.dialogue_speaker_map = speaker_map
 
     def get_transcripts(self):
+        """
+        Method returns a list of text transcripts for each utterance
+        """
         return [utterance.get_transcript() for utterance in self.utterances]
 
     def get_videos(self):
+        """
+        Method returns a list of raw video tensors for each utterance
+        """
         return [utterance.load_video() for utterance in self.utterances]
 
     def get_audios(self):
+        """
+        Method returns a list of audio embeddings for each utterance
+        """
         return [utterance.load_audio() for utterance in self.utterances]
 
     def get_speakers(self):
-        return [utterance.speaker for utterance in self.utterances]
+        """
+        Method returns a list of speaker ids for every utterance in the dialogue.
+        Speaker id's are mapped to be relative within the dialogue ie. all id's
+        are [0, n] where n is the number of different speakers in the dialogue
+        """
+        # map speaker ids to relative id within the dialogue
+        return [self.dialogue_speaker_map[utterance.speaker] for utterance in self.utterances]
 
     def get_labels(self):
+        """
+        Method returns the labels as a tuple of lists. Each list contains the
+        integer id corresponding to either the emotion or sentiment. The returned
+        data is in the following format:
+
+        ([emotion_id], [sentiment_id])
+        """
         emotions = [utterance.emotion for utterance in self.utterances]
         sentiment = [utterance.sentiment for utterance in self.utterances]
         return (emotions, sentiment)
 
     def get_inputs(self):
+        """
+        Method returns all the inputs as a tuple of list. Each list corresponds
+        to the input of a specific modality for each utterance. The returned
+        data is in the following format:
+
+        ([transcripts], [video], [audio_embeddings], [speakers])
+        """
         transcripts = self.get_transcripts()
         video = self.get_videos()
         audio = self.get_audios()
@@ -65,6 +108,10 @@ class Dialogue(object):
         return (transcripts, video, audio, speaker)
 
     def get_data(self):
+        """
+        Method returns the data as a tuple of input and labels. Specifically:
+        (inputs, labels)
+        """
         return (self.get_inputs(), self.get_labels())
 
 
