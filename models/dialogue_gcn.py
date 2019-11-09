@@ -19,10 +19,16 @@ class DialogueGCN(nn.Module):
 #        self.audio_W = nn.Linear(config.audio_in_dim, config.audio_out_dim, bias=True)
 #        self.vis_W = nn.Linear(config.vis_in_dim, config.vis_out_dim, bias=True)
         self.relu = torch.relu
-        self.pred_rel = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
-        self.suc_rel = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
-        self.same_speak_rel = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
-        self.diff_speak_rel = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
+        self.pred_rel_l1 = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
+        self.suc_rel_l1 = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
+        self.same_speak_rel_l1 = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
+        self.diff_speak_rel_1 = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
+
+        self.pred_rel_l2 = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
+        self.suc_rel_l2 = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
+        self.same_speak_rel_l2 = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
+        self.diff_speak_rel_2 = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
+
         self.edge_att_weights = nn.Linear(self.utt_embed_size*2, self.utt_embed_size*2, bias=False)
         self.w_aggr = nn.Parameter(torch.FloatTensor(self.utt_embed_size, self.utt_embed_size))
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
@@ -79,18 +85,20 @@ class DialogueGCN(nn.Module):
         #   to speaker ids for each utterance
         pad = torch.zeros(self.att_window_size, self.utt_embed_size*2)
         ut_embs_padded = torch.cat((pad, ut_embs, pad), 0)
-        ut_embs_fat = torch.zeros(len(ut_embs), self.att_window_size, self.utt_embed_size*2)
+        ut_embs_fat = torch.zeros(len(ut_embs), self.att_window_size*2+1, self.utt_embed_size*2)
         for i in range(len(ut_embs)):
-            ut_embs_fat[i, :, :] = ut_embs_padded[i+self.att_window_size:i+self.att_window_size*2,:]
+            ut_embs_fat[i, :, :] = ut_embs_padded[i:i+self.att_window_size*2+1,:]
+        print("Fat: ", ut_embs_fat.size())
         raw_attn = self.edge_att_weights(ut_embs_fat)
         ut_embs = ut_embs.unsqueeze(2)
         raw_attn = torch.matmul(raw_attn, ut_embs)
-        attn = torch.softmax(raw_attn, dim=1)
+        attn = torch.softmax(raw_attn, dim=1).squeeze(2)
         relation_matrices = self.build_relation_matrices(ut_embs, speaker_ids, attn)
         return relation_matrices
 
     def build_relation_matrices(self, ut_embs, speaker_ids, attn):
         num_utt = len(ut_embs)
+        print("Number of utterances: ", num_utt)
         num_speakers = len(np.unique(speaker_ids))
 
         pred_adj = torch.ones(num_utt, num_utt, dtype=torch.long).triu(0)
@@ -110,6 +118,7 @@ class DialogueGCN(nn.Module):
             same_adj_matrix[j, 0:max(0, j-self.att_window_size)] = 0
             diff_adj_matrix[j, j+1+self.att_window_size:num_utt] = 0
             diff_adj_matrix[j, 0:max(0, j-self.att_window_size)] = 0
+        print(pred_adj.size(), attn.size())
         pred_adj *= attn
         suc_adj *= attn
         same_adj_matrix *= attn

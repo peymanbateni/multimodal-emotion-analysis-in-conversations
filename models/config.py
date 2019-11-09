@@ -12,4 +12,4 @@ class Config:
         self.context_window_size = 10
         self.use_dummy = False
         self.utt_embed_size = 300
-        self.att_window_size = 5
+        self.att_window_size = 2
