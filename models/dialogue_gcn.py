@@ -18,36 +18,49 @@ class DialogueGCN(nn.Module):
         self.context_encoder = nn.GRU(config.context_in_dim, config.context_out_dim, bidirectional=True, batch_first=True)
 #        self.audio_W = nn.Linear(config.audio_in_dim, config.audio_out_dim, bias=True)
 #        self.vis_W = nn.Linear(config.vis_in_dim, config.vis_out_dim, bias=True)
-        self.relu = torch.relu
+
         self.pred_rel_l1 = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
         self.suc_rel_l1 = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
         self.same_speak_rel_l1 = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
-        self.diff_speak_rel_1 = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
+        self.diff_speak_rel_l1 = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
 
         self.pred_rel_l2 = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
         self.suc_rel_l2 = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
         self.same_speak_rel_l2 = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
-        self.diff_speak_rel_2 = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
+        self.diff_speak_rel_l2 = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
 
         self.edge_att_weights = nn.Linear(self.utt_embed_size*2, self.utt_embed_size*2, bias=False)
-        self.w_aggr = nn.Parameter(torch.FloatTensor(self.utt_embed_size, self.utt_embed_size))
+        self.w_aggr_1 = nn.Parameter(torch.FloatTensor(self.utt_embed_size*2, self.utt_embed_size*2))
+        self.w_aggr_2 = nn.Parameter(torch.FloatTensor(self.utt_embed_size*2, self.utt_embed_size*2))
+
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
         self.bert = BertModel.from_pretrained('bert-base-uncased')
+        for param in self.bert.parameters():
+            param.requires_grad = False
 
     def forward(self, x):
+
         transcripts, video, audio, speakers = x
         speakers.squeeze_(0)
         indept_embeds = self.embed_text(transcripts)
         context_embeds = self.context_encoder(indept_embeds)[0].squeeze(0)
-        attn, relation_matrices = self.construct_edges_relations(context_embeds, speakers)
+        relation_matrices = self.construct_edges_relations(context_embeds, speakers)
         pred_adj, suc_adj, same_speak_adj, diff_adj_matrix = relation_matrices
-        h = self.pred_rel(x, adj)
-        h += self.suc_rel(x, adj)
-        h += self.same_speak_rel(x, adj)
-        h += self.diff_speak_rel(x, adj)
-        h = torch.relu(h + torch.matmul(raw_attn, context_embeds))
-        x = self.gc2(x, adj)
-        return F.log_softmax(x, dim=1)
+
+        h1 = self.pred_rel_l1(context_embeds, pred_adj)
+        h1 += self.suc_rel_l1(context_embeds, suc_adj)
+        h1 += self.same_speak_rel_l1(context_embeds, same_speak_adj)
+        h1 += self.diff_speak_rel_l1(context_embeds, diff_adj_matrix)
+        h1 = torch.relu(h1 + torch.matmul(context_embeds, self.w_aggr_1))
+
+        h2 = self.pred_rel_l2(h1, pred_adj)
+        h2 += self.suc_rel_l2(h1, suc_adj)
+        h2 += self.same_speak_rel_l2(h1, same_speak_adj)
+        h2 += self.diff_speak_rel_l2(h1, diff_adj_matrix)
+        h2 = torch.relu(h2 + torch.matmul(h1, self.w_aggr_2))
+        h = torch.cat([h2, context_embeds], dim=1)
+        
+        return h2
 
     def embed_text(self, texts):
         # Input is a tensor of size N x L x G
@@ -88,7 +101,6 @@ class DialogueGCN(nn.Module):
         ut_embs_fat = torch.zeros(len(ut_embs), self.att_window_size*2+1, self.utt_embed_size*2)
         for i in range(len(ut_embs)):
             ut_embs_fat[i, :, :] = ut_embs_padded[i:i+self.att_window_size*2+1,:]
-        print("Fat: ", ut_embs_fat.size())
         raw_attn = self.edge_att_weights(ut_embs_fat)
         ut_embs = ut_embs.unsqueeze(2)
         raw_attn = torch.matmul(raw_attn, ut_embs)
@@ -105,12 +117,11 @@ class DialogueGCN(nn.Module):
         suc_adj = 1 - pred_adj.byte()
         same_adj_matrix = torch.zeros(num_utt, num_utt, dtype=torch.long)
         for i in range(num_speakers):
-            print(speaker_ids)
             same_speak_indices = speaker_ids == i
-            print(same_speak_indices)
             same_adj_matrix[same_speak_indices] = same_speak_indices.long()
         diff_adj_matrix = 1 - same_adj_matrix.byte()
         # Masking out entries due to att_window_size
+        attn_mask = torch.zeros(num_utt, num_utt)
         for j in range(num_utt):
             pred_adj[j, j+1+self.att_window_size:num_utt] = 0
             suc_adj[j, 0:max(0, j-self.att_window_size)] = 0
@@ -118,9 +129,23 @@ class DialogueGCN(nn.Module):
             same_adj_matrix[j, 0:max(0, j-self.att_window_size)] = 0
             diff_adj_matrix[j, j+1+self.att_window_size:num_utt] = 0
             diff_adj_matrix[j, 0:max(0, j-self.att_window_size)] = 0
-        print(pred_adj.size(), attn.size())
-        pred_adj *= attn
-        suc_adj *= attn
-        same_adj_matrix *= attn
-        diff_adj_matrix *= attn
-        return pred_adj, suc_adj, same_adj_matrix.long(), diff_adj_matrix.long()
+            left_attn_boundary = 0
+            if (j-self.att_window_size < 0):
+                left_attn_boundary = self.att_window_size - j
+            right_attn_boundary = self.att_window_size*2 + 1
+            if (j+self.att_window_size >= num_utt):
+                right_attn_boundary = right_attn_boundary - (j+self.att_window_size - num_utt + 1)
+            #print("attn ", j)
+            left_mask_boundary = max(0, j-self.att_window_size)
+            right_mask_boundary = min(num_utt, j+self.att_window_size+1)
+            #print(attn[j, left_attn_boundary:right_attn_boundary].size(), left_attn_boundary, right_attn_boundary)
+            #print(attn_mask[j, left_mask_boundary:right_mask_boundary].size(),
+            #    left_mask_boundary,
+            #    right_mask_boundary)
+            attn_mask[j, left_mask_boundary:right_mask_boundary] *= attn[j, left_attn_boundary:right_attn_boundary]
+
+        pred_adj = pred_adj.float() * attn_mask
+        suc_adj = suc_adj.float() * attn_mask
+        same_adj_matrix = same_adj_matrix.float() * attn_mask
+        diff_adj_matrix = diff_adj_matrix.float() * attn_mask
+        return pred_adj, suc_adj, same_adj_matrix, diff_adj_matrix
