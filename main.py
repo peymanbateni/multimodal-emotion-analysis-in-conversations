@@ -82,6 +82,7 @@ def train_step(model, input, target, loss_emotion, loss_sentiment, optimiser):
     """Trains model for one batch of data."""
     optimiser.zero_grad()
     (batch_output_emotion, batch_output_sentiment) = model(input)
+    target = torch.LongTensor(target).to("cuda")
     batch_loss_emotion = loss_emotion(batch_output_emotion, target[0])
     batch_loss_sentiment = loss_sentiment(batch_output_sentiment, target[1])
     total_loss = batch_loss_emotion + batch_loss_sentiment
@@ -90,6 +91,7 @@ def train_step(model, input, target, loss_emotion, loss_sentiment, optimiser):
     return total_loss.item()
 
 def validate_step(model, input, target):
+    target = torch.LongTensor(target).to("cuda")
     (output_logits_emotion, output_logits_sentiment) = model(input)
     output_labels_emotion = torch.argmax(output_logits_emotion, dim=1)
     output_labels_sentiment = torch.argmax(output_logits_sentiment, dim=1)
@@ -108,6 +110,7 @@ if config.use_dummy:
     model = DummyModel()
 else:
     model = DialogueGCN(config)
+    model.to("cuda")
 
 optimisation_unit = optim.Adam(model.parameters(), lr=0.001)
 train_and_validate(model_name, model, optimisation_unit, emotion_criterion, sentiment_criterion, train_loader, val_loader)

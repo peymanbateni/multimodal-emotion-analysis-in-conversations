@@ -33,6 +33,9 @@ class DialogueGCN(nn.Module):
         self.w_aggr_1 = nn.Parameter(torch.FloatTensor(self.utt_embed_size*2, self.utt_embed_size*2))
         self.w_aggr_2 = nn.Parameter(torch.FloatTensor(self.utt_embed_size*2, self.utt_embed_size*2))
 
+        self.w_sentiment = nn.Linear(self.utt_embed_size*4, 3)
+        self.w_emotion = nn.Linear(self.utt_embed_size*4, 7)
+
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
         self.bert = BertModel.from_pretrained('bert-base-uncased')
         for param in self.bert.parameters():
@@ -59,8 +62,8 @@ class DialogueGCN(nn.Module):
         h2 += self.diff_speak_rel_l2(h1, diff_adj_matrix)
         h2 = torch.relu(h2 + torch.matmul(h1, self.w_aggr_2))
         h = torch.cat([h2, context_embeds], dim=1)
-        
-        return h2
+
+        return self.w_emotion(h), self.w_sentiment(h)
 
     def embed_text(self, texts):
         # Input is a tensor of size N x L x G
@@ -70,7 +73,7 @@ class DialogueGCN(nn.Module):
         lengths = []
         for i, utt in enumerate(texts):
             # TODO: Fix UTT bug
-            input_ids = torch.tensor([self.tokenizer.encode(utt[0])])
+            input_ids = torch.tensor([self.tokenizer.encode(utt[0])]).to("cuda")
             all_hidden_states, all_attentions = self.bert(input_ids)[-2:]
             texts[i] = all_hidden_states.squeeze(0)
             lengths.append(all_hidden_states.size(1))
@@ -96,9 +99,9 @@ class DialogueGCN(nn.Module):
         #   D - dimention of utterance embedding
         # speaker is a list of size N corresponding
         #   to speaker ids for each utterance
-        pad = torch.zeros(self.att_window_size, self.utt_embed_size*2)
+        pad = torch.zeros(self.att_window_size, self.utt_embed_size*2).to("cuda")
         ut_embs_padded = torch.cat((pad, ut_embs, pad), 0)
-        ut_embs_fat = torch.zeros(len(ut_embs), self.att_window_size*2+1, self.utt_embed_size*2)
+        ut_embs_fat = torch.zeros(len(ut_embs), self.att_window_size*2+1, self.utt_embed_size*2).to("cuda")
         for i in range(len(ut_embs)):
             ut_embs_fat[i, :, :] = ut_embs_padded[i:i+self.att_window_size*2+1,:]
         raw_attn = self.edge_att_weights(ut_embs_fat)
@@ -113,15 +116,15 @@ class DialogueGCN(nn.Module):
         print("Number of utterances: ", num_utt)
         num_speakers = len(np.unique(speaker_ids))
 
-        pred_adj = torch.ones(num_utt, num_utt, dtype=torch.long).triu(0)
+        pred_adj = torch.ones(num_utt, num_utt, dtype=torch.long).triu(0).to("cuda")
         suc_adj = 1 - pred_adj.byte()
-        same_adj_matrix = torch.zeros(num_utt, num_utt, dtype=torch.long)
+        same_adj_matrix = torch.zeros(num_utt, num_utt, dtype=torch.long).to("cuda")
         for i in range(num_speakers):
             same_speak_indices = speaker_ids == i
-            same_adj_matrix[same_speak_indices] = same_speak_indices.long()
+            same_adj_matrix[same_speak_indices] = same_speak_indices.long().to("cuda")
         diff_adj_matrix = 1 - same_adj_matrix.byte()
         # Masking out entries due to att_window_size
-        attn_mask = torch.zeros(num_utt, num_utt)
+        attn_mask = torch.zeros(num_utt, num_utt).to("cuda")
         for j in range(num_utt):
             pred_adj[j, j+1+self.att_window_size:num_utt] = 0
             suc_adj[j, 0:max(0, j-self.att_window_size)] = 0
