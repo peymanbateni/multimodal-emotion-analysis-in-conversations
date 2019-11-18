@@ -35,6 +35,7 @@ train_audio_emb, val_audio_emb, test_audio_emb = pickle.load(open(audio_embed_pa
 
 val_dataset = MELDDataset("../MELD.Raw/dev_sent_emo.csv", "/MELD.Raw/dev_splits_complete/", val_audio_emb)
 train_dataset = MELDDataset("../MELD.Raw/train_sent_emo.csv", "/MELD.Raw/train_splits/", train_audio_emb)
+test_dataset = MELDDataset("../MELD.Raw/test_sent_emo.csv", "/MELD.Raw/output_repeated_splits_test", test_audio_emb)
 #utterance = Utterance("", 1, 1, 1, "../MELD.Raw/dev_splits_complete/dia0_utt0.mp4", None)
 #print(utterance.load_video().shape)
 #dataset_loader.load_image("../MELD.Raw/image.png")
@@ -74,7 +75,23 @@ def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentimen
             'loss': total_epoch_loss
             },  "model_saves/" + model_name + "_epoch" + str(epoch) +".pt")
 
-        
+def test_model(model_name, model, test_loader):
+    print("Testing " + model_name)
+    model = model.eval()
+    test_count = 0
+    emotion_correct_count = 0
+    sentiment_correct_count = 0
+    for i, (test_batch_input, test_batch_labels) in enumerate(test_loader):
+        batch_emotion_correct, batch_sentiment_correct, batch_test_count = test_step(model, test_batch_input, test_batch_labels)
+        test_count += batch_test_count
+        emotion_correct_count += batch_emotion_correct.item()
+        sentiment_correct_count += batch_sentiment_correct.item()
+
+    print("Test Accuracy (Emotion): ", str(emotion_correct_count / test_count))
+    print("Test Accuracy (Sentiment): ", str(sentiment_correct_count / test_count))
+
+    return (emotion_correct_count / test_count), (sentiment_correct_count / test_count)
+
 def train_step(model, input, target, loss_emotion, loss_sentiment, optimiser):
     """Trains model for one batch of data."""
     optimiser.zero_grad()
@@ -94,12 +111,22 @@ def validate_step(model, input, target):
     sentiment_accuracy_acc = torch.eq(output_labels_emotion, target[1]).sum()
     return emotion_accuracy_acc, sentiment_accuracy_acc, target[0].size(0)
 
+def test_step(model, input, target):
+    (output_logits_emotion, output_logits_sentiment) = model(input)
+    output_labels_emotion = torch.argmax(output_logits_emotion, dim=1)
+    output_labels_sentiment = torch.argmax(output_logits_sentiment, dim=1)
+    emotion_accuracy_acc = torch.eq(output_labels_emotion, target[0]).sum()
+    sentiment_accuracy_acc = torch.eq(output_labels_emotion, target[1]).sum()
+    return emotion_accuracy_acc, sentiment_accuracy_acc, target[0].size(0)
+
 dumb_model = DummyModel()
 emotion_criterion = nn.CrossEntropyLoss()
 sentiment_criterion = nn.CrossEntropyLoss()
 optimisation_unit = optim.Adam(dumb_model.parameters(), lr=0.001)
 model_name = "Dumb_Model"
-train_loader = DataLoader(train_dataset, batch_size=10, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=10, shuffle=True)
+train_loader = DataLoader(train_dataset, batch_size=100, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=100, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=100, shuffle=True)
 
 train_and_validate(model_name, dumb_model, optimisation_unit, emotion_criterion, sentiment_criterion, train_loader, val_loader)
+test_model(model_name, dumb_model, test_loader)
