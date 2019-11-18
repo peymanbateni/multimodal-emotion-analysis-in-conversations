@@ -30,12 +30,98 @@ def video_to_tensor(video_file):
     cap.release()
     return torch.tensor(buf)
 
+class Dialogue(object):
+    """
+    Class for representing a dialogue as a list of utterances
+    """
+    def __init__(self, id, utterances):
+        self.dialogue_id = id
+        self.utterances = utterances
+        self.reparameterize_speakers()
+
+    def reparameterize_speakers(self):
+        """
+        Method for reparameterizing speakers to the specific dialogue. Eg:
+            speaker_ids (1, 3, 4) -> (0, 1, 2)
+        """
+        speaker_map = {}
+        id = 0
+        for utterance in self.utterances:
+            if utterance.speaker not in speaker_map.keys():
+                speaker_map[utterance.speaker] = id
+                id += 1
+
+        self.dialogue_speaker_map = speaker_map
+
+    def get_transcripts(self):
+        """
+        Method returns a list of text transcripts for each utterance
+        """
+        return [utterance.get_transcript() for utterance in self.utterances]
+
+    def get_videos(self):
+        """
+        Method returns a list of raw video tensors for each utterance
+        """
+        return [utterance.load_video() for utterance in self.utterances]
+
+    def get_audios(self):
+        """
+        Method returns a list of audio embeddings for each utterance
+        """
+        return [utterance.load_audio() for utterance in self.utterances]
+
+    def get_speakers(self):
+        """
+        Method returns a list of speaker ids for every utterance in the dialogue.
+        Speaker id's are mapped to be relative within the dialogue ie. all id's
+        are [0, n] where n is the number of different speakers in the dialogue
+        """
+        # map speaker ids to relative id within the dialogue        
+        return torch.LongTensor([self.dialogue_speaker_map[utterance.speaker] for utterance in self.utterances])
+
+    def get_labels(self):
+        """
+        Method returns the labels as a tuple of lists. Each list contains the
+        integer id corresponding to either the emotion or sentiment. The returned
+        data is in the following format:
+
+        ([emotion_id], [sentiment_id])
+        """
+        emotions = [utterance.emotion for utterance in self.utterances]
+        sentiment = [utterance.sentiment for utterance in self.utterances]
+        return (emotions, sentiment)
+
+    def get_inputs(self):
+        """
+        Method returns all the inputs as a tuple of list. Each list corresponds
+        to the input of a specific modality for each utterance. The returned
+        data is in the following format:
+
+        ([transcripts], [video], [audio_embeddings], [speakers])
+        """
+        transcripts = self.get_transcripts()
+        video = self.get_videos()
+        audio = self.get_audios()
+        speaker = self.get_speakers()
+
+        return (transcripts, video, audio, speaker)
+
+    def get_data(self):
+        """
+        Method returns the data as a tuple of input and labels. Specifically:
+        (inputs, labels)
+        """
+        return (self.get_inputs(), self.get_labels())
+
 
 class Utterance(object):
     """
     Class for representing a single utterance in all 3 modalities
     """
-    def __init__(self, transcript, speaker, emotion, sentiment, file_path, utt_audio):
+    def __init__(self, dialogue_id, utterance_id, transcript, speaker, emotion, sentiment, file_path, utt_audio):
+        self.dialogue_id = dialogue_id
+        self.utterance_id = utterance_id
         self.transcript = transcript
         self.speaker = speaker
         self.emotion = emotion
@@ -103,7 +189,7 @@ class MELDDataset(Dataset):
 
     def __init__(self, csv_file, root_dir, audio_embs):
         self.csv_records = pd.read_csv(csv_file)
-        self.root_dir = root_dir
+        self.root_dir = os.path.abspath(root_dir)
 
         speaker_set = set(self.csv_records.loc[:, "Speaker"].values.tolist())
         emotion_set = set(self.csv_records.loc[:, "Emotion"].values.tolist())
@@ -114,24 +200,28 @@ class MELDDataset(Dataset):
         self.emotion_mapping = {emotion: id for id, emotion in enumerate(emotion_set)}
         self.sentiment_mapping = {sentiment: id for id, sentiment in enumerate(sentiment_set)}
 
-        print("Speaker mapping: {}".format(self.speaker_mapping))
-        print("Emotion mapping: {}".format(self.emotion_mapping))
-        print("Sentiment mapping: {}".format(self.sentiment_mapping))
+#        print("Speaker mapping: {}".format(self.speaker_mapping))
+#        print("Emotion mapping: {}".format(self.emotion_mapping))
+#        print("Sentiment mapping: {}".format(self.sentiment_mapping))
         #print([self.speakers_to_label[key] for key in self.csv_records.loc[:, "Speaker"].values.tolist()])
 
-        print(self.csv_records.iloc[0:10,:])
+#        print(self.csv_records.iloc[0:10,:])
 
-        self.data = []
+        dialogues = {}
         for record in self.csv_records.loc[:].values:
-            print(record)
+#            print(record)
             id, transcript, speaker, emotion, sentiment, d_id, u_id, _, _, _, _ = record
 
+            if d_id not in dialogues.keys():
+                dialogues[d_id] = []
             # TODO: Still some issues with parsing the transcript, specifically wrt special symbols
             file_path = "dia{}_utt{}.mp4".format(d_id, u_id)
             file_path = os.path.join(self.root_dir, file_path)
             utt_audio_embed_id = str(d_id) + "_" + str(u_id)
             utt_audio_embed = audio_embs[utt_audio_embed_id]
             utterance = Utterance(
+                d_id,
+                u_id,
                 transcript,
                 self.speaker_mapping[speaker],
                 self.emotion_mapping[emotion],
@@ -139,28 +229,20 @@ class MELDDataset(Dataset):
                 file_path,
                 utt_audio_embed
             )
-            self.data.append(utterance)
+            dialogues[d_id].append(utterance)
+
+        self.data = []
+        for d_id, utterances in dialogues.items():
+            # Assumes no gaps in dialogue id
+            # Assumes no gaps in utterance ids
+            utteraences = utterances.sort(key=lambda x: x.utterance_id)
+            self.data.append(Dialogue(d_id, utterances))
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, idx):
-        utterances = self.data[idx]
-        if not isinstance(utterances, list):
-            # only single utterance
-            input = ([utterances.get_transcript()], [utterances.load_video()], [utterances.load_audio()])
-            label = utterances.get_label()
-            return input, label
-        else:
-            transcripts = [utterance.get_transcript() for utterance in utterances]
-            video = [utterance.load_video() for utterance in utterances]
-            audio = [utterance.load_audio() for utterance in utterances]
-            emotion_labels = [utterance.get_label()[0] for utterance in utterances]
-            sentiment_labels = [utterance.get_label()[1] for utterance in utterances]
-
-        input = (transcripts, video, audio)
-        labels = (emotion_labels, sentiment_labels)
-        return input, labels
+        return self.data[idx].get_data()
 
     def load_sample_transcript(self, idx):
         return self.data[idx].get_transcript()

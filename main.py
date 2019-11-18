@@ -5,6 +5,8 @@ from dataset import MELDDataset, Utterance
 import pickle
 from dummy_model import DummyModel
 from torch.utils.data import DataLoader
+from models.config import Config
+from models.dialogue_gcn import DialogueGCN
 
 #audio_embed_path = "../MELD.Features.Models/features/audio_embeddings_feature_selection_emotion.pkl"
 audio_embed_path = "../MELD.Raw/audio_embeddings_feature_selection_sentiment.pkl"
@@ -40,10 +42,11 @@ test_dataset = MELDDataset("../MELD.Raw/test_sent_emo.csv", "/MELD.Raw/output_re
 #print(utterance.load_video().shape)
 #dataset_loader.load_image("../MELD.Raw/image.png")
 
+
 def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentiment, train_data_loader, val_data_loader, epochs=5):
 
     for epoch in range(epochs):
-        
+
         model = model.train()
         loss_acc = 0
         total_epoch_loss = 0
@@ -96,6 +99,7 @@ def train_step(model, input, target, loss_emotion, loss_sentiment, optimiser):
     """Trains model for one batch of data."""
     optimiser.zero_grad()
     (batch_output_emotion, batch_output_sentiment) = model(input)
+    target = torch.LongTensor(target).to("cuda")
     batch_loss_emotion = loss_emotion(batch_output_emotion, target[0])
     batch_loss_sentiment = loss_sentiment(batch_output_sentiment, target[1])
     total_loss = batch_loss_emotion + batch_loss_sentiment
@@ -104,6 +108,7 @@ def train_step(model, input, target, loss_emotion, loss_sentiment, optimiser):
     return total_loss.item()
 
 def validate_step(model, input, target):
+    target = torch.LongTensor(target).to("cuda")
     (output_logits_emotion, output_logits_sentiment) = model(input)
     output_labels_emotion = torch.argmax(output_logits_emotion, dim=1)
     output_labels_sentiment = torch.argmax(output_logits_sentiment, dim=1)
@@ -120,9 +125,9 @@ def test_step(model, input, target):
     return emotion_accuracy_acc, sentiment_accuracy_acc, target[0].size(0)
 
 dumb_model = DummyModel()
+config = Config()
 emotion_criterion = nn.CrossEntropyLoss()
 sentiment_criterion = nn.CrossEntropyLoss()
-optimisation_unit = optim.Adam(dumb_model.parameters(), lr=0.001)
 model_name = "Dumb_Model"
 train_loader = DataLoader(train_dataset, batch_size=100, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=100, shuffle=True)
@@ -130,3 +135,14 @@ test_loader = DataLoader(test_dataset, batch_size=100, shuffle=True)
 
 train_and_validate(model_name, dumb_model, optimisation_unit, emotion_criterion, sentiment_criterion, train_loader, val_loader)
 test_model(model_name, dumb_model, test_loader)
+train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=1, shuffle=True)
+
+if config.use_dummy:
+    model = DummyModel()
+else:
+    model = DialogueGCN(config)
+    model.to("cuda")
+
+optimisation_unit = optim.Adam(model.parameters(), lr=0.001)
+train_and_validate(model_name, model, optimisation_unit, emotion_criterion, sentiment_criterion, train_loader, val_loader)
