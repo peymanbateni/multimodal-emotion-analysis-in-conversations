@@ -9,7 +9,6 @@ class Config:
         self.audio_out_dim = 300
         self.vis_in_dim = 300
         self.vis_out_dim = 300
-        self.context_window_size = 10
         self.use_dummy = False
         self.utt_embed_size = 300
-        self.att_window_size = 2
+        self.att_window_size = 10

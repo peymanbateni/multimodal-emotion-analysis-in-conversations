@@ -43,7 +43,7 @@ test_dataset = MELDDataset("../MELD.Raw/test_sent_emo.csv", "/MELD.Raw/output_re
 #dataset_loader.load_image("../MELD.Raw/image.png")
 
 
-def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentiment, train_data_loader, val_data_loader, epochs=5):
+def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentiment, train_data_loader, val_data_loader, epochs=10):
 
     for epoch in range(epochs):
 
@@ -54,9 +54,9 @@ def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentimen
             batch_loss = train_step(model, batch_input, batch_labels, loss_emotion, loss_sentiment, optimiser)
             loss_acc += batch_loss
             total_epoch_loss += batch_loss
-            if (i % 50):
+            if (i % 100 == 0):
                 print("Epoch[" + str(epoch) + "/" + str(epochs) +"] - batch " + str(i) + " Error: " + str(loss_acc))
-                loss_acc = 0
+                #loss_acc = 0
 
         model = model.eval()
         val_count = 0
@@ -101,8 +101,8 @@ def train_step(model, input, target, loss_emotion, loss_sentiment, optimiser):
     (batch_output_emotion, batch_output_sentiment) = model(input)
     target = torch.LongTensor(target).to("cuda")
     batch_loss_emotion = loss_emotion(batch_output_emotion, target[0])
-    batch_loss_sentiment = loss_sentiment(batch_output_sentiment, target[1])
-    total_loss = batch_loss_emotion + batch_loss_sentiment
+    #batch_loss_sentiment = loss_sentiment(batch_output_sentiment, target[1])
+    total_loss = batch_loss_emotion# + batch_loss_sentiment
     total_loss.backward()
     optimiser.step()
     return total_loss.item()
@@ -133,8 +133,8 @@ train_loader = DataLoader(train_dataset, batch_size=100, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=100, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=100, shuffle=True)
 
-train_and_validate(model_name, dumb_model, optimisation_unit, emotion_criterion, sentiment_criterion, train_loader, val_loader)
-test_model(model_name, dumb_model, test_loader)
+#train_and_validate(model_name, dumb_model, optimisation_unit, emotion_criterion, sentiment_criterion, train_loader, val_loader)
+#test_model(model_name, dumb_model, test_loader)
 train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=1, shuffle=True)
 
