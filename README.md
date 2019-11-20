@@ -12,7 +12,7 @@ Signal processing course project! In this project, we aim to produce a model on 
 - adding audio features (Grig)
 - early stopping procedure for training (Peyman)
 - obtaining results for emotion-only, sentiment-only and both classified as the same time models (Peyman)
-- check BERT (Grig)
+- ~~check BERT (Grig)~~
 - start on writing the report (Willis)
   - Intro
   - Related work
