@@ -113,7 +113,7 @@ class DialogueGCN(nn.Module):
 
     def build_relation_matrices(self, ut_embs, speaker_ids, attn):
         num_utt = len(ut_embs)
-        print("Number of utterances: ", num_utt)
+        #print("Number of utterances: ", num_utt)
         num_speakers = len(np.unique(speaker_ids))
 
         pred_adj = torch.ones(num_utt, num_utt, dtype=torch.long).triu(0).to("cuda")
