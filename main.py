@@ -42,8 +42,7 @@ test_dataset = MELDDataset("../MELD.Raw/test_sent_emo.csv", "/MELD.Raw/output_re
 #print(utterance.load_video().shape)
 #dataset_loader.load_image("../MELD.Raw/image.png")
 
-
-def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentiment, train_data_loader, val_data_loader, epochs=20):
+def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentiment, train_data_loader, val_data_loader, epochs=10):
 
     # dummpy value of 0as a lower bound for the accuracy
     best_emotion_accuracy_so_far = 0
@@ -59,7 +58,7 @@ def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentimen
             total_epoch_loss += batch_loss
             if (i % 100 == 0):
                 print("Epoch[" + str(epoch) + "/" + str(epochs) +"] - batch " + str(i) + " Error: " + str(loss_acc))
-                loss_acc = 0
+                #loss_acc = 0
 
         model = model.eval()
         emotion_predicted_labels = []
@@ -193,8 +192,8 @@ def train_step(model, input, target, loss_emotion, loss_sentiment, optimiser):
     (batch_output_emotion, batch_output_sentiment) = model(input)
     target = torch.LongTensor(target).to("cuda")
     batch_loss_emotion = loss_emotion(batch_output_emotion, target[0])
-    batch_loss_sentiment = loss_sentiment(batch_output_sentiment, target[1])
-    total_loss = batch_loss_emotion + batch_loss_sentiment
+    #batch_loss_sentiment = loss_sentiment(batch_output_sentiment, target[1])
+    total_loss = batch_loss_emotion# + batch_loss_sentiment
     total_loss.backward()
     optimiser.step()
     return total_loss.item()
