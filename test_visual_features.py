@@ -1,7 +1,7 @@
 import torch
 import pickle
 from dataset import MELDDataset
-#from models.visual_features import detect_faces_cascade, detect_faces_mtcnn
+from models.visual_features import detect_faces_cascade, detect_faces_mtcnn
 
 """
 File for testing the visual features module
@@ -16,8 +16,8 @@ train_audio_emb, val_audio_emb, test_audio_emb = pickle.load(open(audio_embed_pa
 
 dataset = MELDDataset("../MELD.Raw/dev_sent_emo.csv", "../MELD.Raw/dev_splits_complete/", val_audio_emb)
 
-#video = dataset[2][0][1][0]
+video = dataset[2][0][1][0]
 
 print(dataset[2][0])
 
-#detect_faces_cascade(video, cascade_path, display_images=True)
+detect_faces_mtcnn(video, display_images=True)
