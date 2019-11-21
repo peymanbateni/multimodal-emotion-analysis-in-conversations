@@ -41,7 +41,6 @@ class DialogueGCN(nn.Module):
             param.requires_grad = False
 
     def forward(self, x):
-
         transcripts, video, audio, speakers = x
         speakers.squeeze_(0)
         #print(self.pred_rel_l1.weight[300:350, 300:400])
@@ -50,17 +49,17 @@ class DialogueGCN(nn.Module):
         relation_matrices = self.construct_edges_relations(context_embeds, speakers)
         pred_adj, suc_adj, same_speak_adj, diff_adj_matrix, attn = relation_matrices
         #print(context_embeds[:, 300:330])                                        
-        h1 = torch.relu(self.pred_rel_l1(context_embeds, pred_adj))
+        h1 = self.pred_rel_l1(context_embeds, pred_adj)
         #print(h1[:, 300:330])                                        
-        h1 += torch.relu(self.suc_rel_l1(context_embeds, suc_adj))
-        h1 += torch.relu(self.same_speak_rel_l1(context_embeds, same_speak_adj))
-        h1 += torch.relu(self.diff_speak_rel_l1(context_embeds, diff_adj_matrix))
+        h1 += self.suc_rel_l1(context_embeds, suc_adj)
+        h1 += self.same_speak_rel_l1(context_embeds, same_speak_adj)
+        h1 += self.diff_speak_rel_l1(context_embeds, diff_adj_matrix)
         h1 = torch.relu(h1 + torch.matmul(context_embeds, self.w_aggr_1) * attn.diag().unsqueeze(1))
         
-        h2 = torch.relu(self.pred_rel_l2(h1, pred_adj))
-        h2 += torch.relu(self.suc_rel_l2(h1, suc_adj))
-        h2 += torch.relu(self.same_speak_rel_l2(h1, same_speak_adj))
-        h2 += torch.relu(self.diff_speak_rel_l2(h1, diff_adj_matrix))
+        h2 = self.pred_rel_l2(h1, pred_adj)
+        h2 += self.suc_rel_l2(h1, suc_adj)
+        h2 += self.same_speak_rel_l2(h1, same_speak_adj)
+        h2 += self.diff_speak_rel_l2(h1, diff_adj_matrix)
         h2 = torch.relu(h2 + torch.matmul(h1, self.w_aggr_2) * attn.diag().unsqueeze(1))
         h = torch.cat([h2, context_embeds], dim=1)
         #print(h2[:, 0:30])                                
