@@ -146,7 +146,6 @@ class Utterance(object):
         """
         Returns a tuple of the integer-mapped label as (emotion, sentiment)
         """
-
         return (self.emotion, self.sentiment)
 
     def load_video(self):

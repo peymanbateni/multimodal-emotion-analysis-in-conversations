@@ -43,7 +43,7 @@ test_dataset = MELDDataset("../MELD.Raw/test_sent_emo.csv", "/MELD.Raw/output_re
 #dataset_loader.load_image("../MELD.Raw/image.png")
 
 
-def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentiment, train_data_loader, val_data_loader, epochs=10):
+def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentiment, train_data_loader, val_data_loader, epochs=20):
 
     for epoch in range(epochs):
 
@@ -144,5 +144,5 @@ else:
     model = DialogueGCN(config)
     model.to("cuda")
 
-optimisation_unit = optim.Adam(model.parameters(), lr=0.001)
+optimisation_unit = optim.Adam(model.parameters(), lr=0.001, weight_decay=10e-6)
 train_and_validate(model_name, model, optimisation_unit, emotion_criterion, sentiment_criterion, train_loader, val_loader)
