@@ -42,7 +42,7 @@ test_dataset = MELDDataset("../MELD.Raw/test_sent_emo.csv", "/MELD.Raw/output_re
 #print(utterance.load_video().shape)
 #dataset_loader.load_image("../MELD.Raw/image.png")
 
-def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentiment, train_data_loader, val_data_loader, epochs=10):
+def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentiment, train_data_loader, val_data_loader, epochs=5):
 
     # dummpy value of 0as a lower bound for the accuracy
     best_emotion_accuracy_so_far = 0
@@ -91,12 +91,12 @@ def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentimen
 
         #if ((emotion_correct_count / val_count) > best_emotion_accuracy_so_far):
         #    best_emotion_accuracy_so_far = (emotion_correct_count / val_count)
-        #    torch.save({
-        #        'epoch': epoch,
-        #        'model_state_dict': model.state_dict(),
-        #        'optimizer_state_dict': optimiser.state_dict(),
-        #        'loss': total_epoch_loss
-        #        },  "model_saves/" + model_name + "_epoch" + str(epoch) +".pt")
+        torch.save({
+            'epoch': epoch,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimiser.state_dict(),
+            'loss': total_epoch_loss
+        },  "model_saves/" + model_name + "_epoch" + str(epoch) +".pt")
         #    num_of_no_improvements = 0
         #    print("BEST VALIDATION UPDATED!")
         #else:
@@ -120,8 +120,8 @@ def get_weighted_F1(emotion_f1s, sentiment_f1s, targets):
     return emotion_weighted_f1, sentiment_weighted_f1
 
 def get_accuracy(predicted_emotion, predicted_sentiment, target):
-    emotion_accuracy_acc = torch.eq(predicted_emotion, target[:,0]).sum().item()
-    sentiment_accuracy_acc = torch.eq(predicted_sentiment, target[:,1]).sum().item()
+    emotion_accuracy_acc = torch.eq(predicted_emotion, target[:,0]).sum().item() / target.size(0)
+    sentiment_accuracy_acc = torch.eq(predicted_sentiment, target[:,1]).sum().item() / target.size(0)
     return emotion_accuracy_acc, sentiment_accuracy_acc
 
 def get_f1_score_for_each_class(emotion_precisions, emotion_recalls, sentiment_precisions, sentiment_recalls):
@@ -172,19 +172,33 @@ def get_recall_for_each_class(predicted_emotion, predicted_sentiment, target):
 def test_model(model_name, model, test_loader):
     print("Testing " + model_name)
     model = model.eval()
-    test_count = 0
-    emotion_correct_count = 0
-    sentiment_correct_count = 0
+    emotion_predicted_labels = []
+    sentiment_predicted_labels = []
+    emotion_target_labels = []
+    sentiment_target_labels = []
     for i, (test_batch_input, test_batch_labels) in enumerate(test_loader):
-        batch_emotion_correct, batch_sentiment_correct, batch_test_count = test_step(model, test_batch_input, test_batch_labels)
-        test_count += batch_test_count
-        emotion_correct_count += batch_emotion_correct.item()
-        sentiment_correct_count += batch_sentiment_correct.item()
+        batch_emotion_correct_predicted_labels, batch_sentiment_predicted_labels, batch_val_count = validate_step(model, test_batch_input, test_batch_labels)
+        emotion_predicted_labels.append(batch_emotion_correct_predicted_labels)
+        sentiment_predicted_labels.append(batch_sentiment_predicted_labels)
+        emotion_target_labels.append(torch.cat(test_batch_labels[0],0))
+        sentiment_target_labels.append(torch.cat(test_batch_labels[1],0))
 
-    print("Test Accuracy (Emotion): ", str(emotion_correct_count / test_count))
-    print("Test Accuracy (Sentiment): ", str(sentiment_correct_count / test_count))
+    emotion_predicted_labels = torch.cat(emotion_predicted_labels, 0).cuda()
+    sentiment_predicted_labels = torch.cat(sentiment_predicted_labels, 0).cuda()
+    emotion_target_labels = torch.cat(emotion_target_labels, 0)
+    sentiment_target_labels = torch.cat(sentiment_target_labels, 0)
+    target_labels = torch.cat([emotion_target_labels.unsqueeze(1), sentiment_target_labels.unsqueeze(1)], 1).cuda()
 
-    return (emotion_correct_count / test_count), (sentiment_correct_count / test_count)
+    emotion_accuracy, sentiment_accuracy = get_accuracy(emotion_predicted_labels, sentiment_predicted_labels, target_labels)
+    emotion_recalls, sentiment_recalls = get_recall_for_each_class(emotion_predicted_labels, sentiment_predicted_labels, target_labels)
+    emotion_precisions, sentiment_precisions = get_precision_for_each_class(emotion_predicted_labels, sentiment_predicted_labels, target_labels)
+    emotion_f1s, sentiment_f1s = get_f1_score_for_each_class(emotion_precisions, emotion_recalls, sentiment_precisions, sentiment_recalls)
+    emotion_weighted_f1, sentiment_weighted_f1 = get_weighted_F1(emotion_f1s, sentiment_f1s, target_labels)
+
+    print("Test Accuracy (Emotion): ", emotion_accuracy)
+    print("F1", emotion_f1s)
+    print("F1 Mean ", torch.FloatTensor(list(emotion_f1s.values())).mean().item())
+    print("F1 Weighted", emotion_weighted_f1.item())
 
 def train_step(model, input, target, loss_emotion, loss_sentiment, optimiser):
     """Trains model for one batch of data."""
@@ -209,12 +223,14 @@ def validate_step(model, input, target):
     return output_labels_emotion, output_labels_sentiment, target[0].size()
 
 def test_step(model, input, target):
+    target = torch.LongTensor(target).to("cuda")
     (output_logits_emotion, output_logits_sentiment) = model(input)
     output_labels_emotion = torch.argmax(output_logits_emotion, dim=1)
     output_labels_sentiment = torch.argmax(output_logits_sentiment, dim=1)
-    emotion_accuracy_acc = torch.eq(output_labels_emotion, target[0]).sum()
-    sentiment_accuracy_acc = torch.eq(output_labels_emotion, target[1]).sum()
-    return emotion_accuracy_acc, sentiment_accuracy_acc, target[0].size(0)
+    #emotion_accuracy_acc = torch.eq(output_labels_emotion, target[0]).sum()
+    #sentiment_accuracy_acc = torch.eq(output_labels_emotion, target[1]).sum()
+    #return emotion_accuracy_acc, sentiment_accuracy_acc, target[0].size(0)
+    return output_labels_emotion, output_labels_sentiment, target[0].size()
 
 dumb_model = DummyModel()
 config = Config()
@@ -238,5 +254,7 @@ else:
     model.to("cuda")
 
 optimisation_unit = optim.Adam(model.parameters(), lr=0.001)
-train_and_validate(model_name, model, optimisation_unit, emotion_criterion, sentiment_criterion, train_loader, val_loader)
-#test_model(model_name, model, test_loader)
+
+for i in range(10):
+    train_and_validate(model_name, model, optimisation_unit, emotion_criterion, sentiment_criterion, train_loader, val_loader)
+    test_model(model_name, model, test_loader)
