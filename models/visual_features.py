@@ -72,7 +72,23 @@ def detect_faces_mtcnn(video_tensor, max_persons=7, output_size=160, sampling_ra
                 cv2.waitKey(0)
     return target
 
+def get_face_embeddings(face_tensor):
+    """
+    Method for generating face embeddings based on the Facenet model.
+    Input:
+        face_tensor(torch.tensor(N, F, C, W, H)): dimensions returned by the MTCNN detctor
 
+    Ouput:
+        torch.tensor(N,F): N - number of frames, F face per frame
+    """
+    N, F, C, W, H, = face_tensor.shape
+    face_tensor = face_tensor.view(-1, C, W, H)
+
+    # Instantiate facenet model
+    resnet = InceptionResnetV1(pretrained='vggface2').eval()
+    embeddings = resnet(face_tensor)
+
+    return embeddings.view(N, F, -1)
 # Alternate implementation of mtcnn:
 
 # def detect_faces_mtcnn(video_tensor, display_images=False):
