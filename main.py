@@ -42,7 +42,7 @@ test_dataset = MELDDataset("../MELD.Raw/test_sent_emo.csv", "/MELD.Raw/output_re
 #print(utterance.load_video().shape)
 #dataset_loader.load_image("../MELD.Raw/image.png")
 
-def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentiment, train_data_loader, val_data_loader, epochs=20):
+def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentiment, train_data_loader, val_data_loader, epochs=5):
 
     # dummpy value of 0as a lower bound for the accuracy
     best_emotion_accuracy_so_far = 0
@@ -209,6 +209,7 @@ def train_step(model, input, target, loss_emotion, loss_sentiment, optimiser):
     #batch_loss_sentiment = loss_sentiment(batch_output_sentiment, target[1])
     total_loss = batch_loss_emotion# + batch_loss_sentiment
     total_loss.backward()
+    torch.nn.utils.clip_grad_norm_(model.parameters(), 1)
     optimiser.step()
     return total_loss.item()
 
@@ -253,7 +254,11 @@ else:
     model = DialogueGCN(config)
     model.to("cuda")
 
-optimisation_unit = optim.Adam(model.parameters(), lr=0.001)
+#model.load_state_dict(torch.load('model_saves/DialogueGCN_epoch12.pt')['model_state_dict'])
+#model.eval()
+#test_model('gcn_13', model, test_loader)
+#return
+optimisation_unit = optim.Adam(model.parameters(), lr=0.0005, weight_decay=0.00001)
 
 for i in range(10):
     train_and_validate(model_name, model, optimisation_unit, emotion_criterion, sentiment_criterion, train_loader, val_loader)
