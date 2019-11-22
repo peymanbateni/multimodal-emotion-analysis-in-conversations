@@ -15,9 +15,10 @@ class FaceModule(torch.nn.Module):
     
     def forward(self, video_input):
         faces_tensor = detect_faces_mtcnn(video_input)
-        print(faces_tensor.size())
+        #print(faces_tensor.size())
         faces_embeddings = get_face_embeddings(faces_tensor)
-        print(len(faces_embeddings))
+        #print(len(faces_embeddings))
+        #print("Got here!")
 
 """
 Currently, two methods for extracting bounding-boxes on faces have been tested,
@@ -84,7 +85,7 @@ def detect_faces_mtcnn(video_tensor, max_persons=7, output_size=160, sampling_ra
         if image is not None:
             target[idx, :image.shape[0]] = image
 
-    print(target.shape)
+    #print(target.shape)
     if display_images:
         for idx, image in enumerate(target):
             for face in image:
