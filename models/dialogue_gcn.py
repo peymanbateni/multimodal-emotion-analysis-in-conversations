@@ -41,7 +41,7 @@ class DialogueGCN(nn.Module):
         for param in self.bert.parameters():
             param.requires_grad = False
 
-        self.face_module = FaceModule()
+        #self.face_module = FaceModule()
 
     def forward(self, x):
         transcripts, video, audio, speakers = x
@@ -49,7 +49,7 @@ class DialogueGCN(nn.Module):
         #print(self.pred_rel_l1.weight[300:350, 300:400])
         indept_embeds = self.embed_text(transcripts)
         context_embeds = self.context_encoder(indept_embeds)[0].squeeze(0)
-        face_embeds = self.face_module(video)
+        #face_embeds = self.face_module(video)
         relation_matrices = self.construct_edges_relations(context_embeds, speakers)
         pred_adj, suc_adj, same_speak_adj, diff_adj_matrix, attn = relation_matrices
         #print(context_embeds[:, 300:330])                                        

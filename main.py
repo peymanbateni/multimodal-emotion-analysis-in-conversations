@@ -7,6 +7,7 @@ from dummy_model import DummyModel
 from torch.utils.data import DataLoader
 from models.config import Config
 from models.dialogue_gcn import DialogueGCN
+from sklearn.metrics import f1_score
 
 #audio_embed_path = "../MELD.Features.Models/features/audio_embeddings_feature_selection_emotion.pkl"
 audio_embed_path = "../MELD.Raw/audio_embeddings_feature_selection_sentiment.pkl"
@@ -78,16 +79,16 @@ def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentimen
         sentiment_target_labels = torch.cat(sentiment_target_labels, 0)
         target_labels = torch.cat([emotion_target_labels.unsqueeze(1), sentiment_target_labels.unsqueeze(1)], 1).cuda()
 
+        emotion_f1_score = f1_score(emotion_target_labels.cpu().numpy(), emotion_predicted_labels.cpu().numpy(), average='weighted')        
+
         emotion_accuracy, sentiment_accuracy = get_accuracy(emotion_predicted_labels, sentiment_predicted_labels, target_labels)
-        emotion_recalls, sentiment_recalls = get_recall_for_each_class(emotion_predicted_labels, sentiment_predicted_labels, target_labels)
-        emotion_precisions, sentiment_precisions = get_precision_for_each_class(emotion_predicted_labels, sentiment_predicted_labels, target_labels)
-        emotion_f1s, sentiment_f1s = get_f1_score_for_each_class(emotion_precisions, emotion_recalls, sentiment_precisions, sentiment_recalls)
-        emotion_weighted_f1, sentiment_weighted_f1 = get_weighted_F1(emotion_f1s, sentiment_f1s, target_labels)
+        #emotion_recalls, sentiment_recalls = get_recall_for_each_class(emotion_predicted_labels, sentiment_predicted_labels, target_labels)
+        #emotion_precisions, sentiment_precisions = get_precision_for_each_class(emotion_predicted_labels, sentiment_predicted_labels, target_labels)
+        #emotion_f1s, sentiment_f1s = get_f1_score_for_each_class(emotion_precisions, emotion_recalls, sentiment_precisions, sentiment_recalls)
+        #emotion_weighted_f1, sentiment_weighted_f1 = get_weighted_F1(emotion_f1s, sentiment_f1s, target_labels)
 
         print("Validation Accuracy (Emotion): ", emotion_accuracy)
-        print("F1", emotion_f1s)
-        print("F1 Mean ", torch.FloatTensor(list(emotion_f1s.values())).mean().item())
-        print("F1 Weighted", emotion_weighted_f1.item())
+        print("F1 Weighted", emotion_f1_score)
 
         #if ((emotion_correct_count / val_count) > best_emotion_accuracy_so_far):
         #    best_emotion_accuracy_so_far = (emotion_correct_count / val_count)
