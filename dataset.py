@@ -153,7 +153,7 @@ class Utterance(object):
         """
         Loads the video into memory and converts the frames into a pyTorch tensor
         """
-        return video_to_tensor(self.file_path)
+        return ""#video_to_tensor(self.file_path)
 
     def load_audio(self):
         """
@@ -234,7 +234,7 @@ class MELDDataset(Dataset):
         self.data = []
         for d_id, utterances in dialogues.items():
             # Assumes no gaps in dialogue id
-            # Assumes no gaps in utterance ids
+            # Assumes no gaps in utterance ids            
             utteraences = utterances.sort(key=lambda x: x.utterance_id)
             self.data.append(Dialogue(d_id, utterances))
 

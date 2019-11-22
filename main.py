@@ -7,7 +7,8 @@ from dummy_model import DummyModel
 from torch.utils.data import DataLoader
 from models.config import Config
 from models.dialogue_gcn import DialogueGCN
-
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 #audio_embed_path = "../MELD.Features.Models/features/audio_embeddings_feature_selection_emotion.pkl"
 audio_embed_path = "../MELD.Raw/audio_embeddings_feature_selection_sentiment.pkl"
 

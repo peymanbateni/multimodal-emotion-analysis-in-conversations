@@ -52,8 +52,8 @@ def detect_faces_mtcnn(video_tensor, max_persons=7, output_size=160, sampling_ra
     # Istantiate mtcnn detector
     mtcnn = MTCNN(image_size=output_size, margin=0, keep_all=True)
 
-    print(len(video_tensor))
-    print(video_tensor[0].shape)
+    #print(len(video_tensor))
+    #print(video_tensor[0].shape)
     #TODO: fix me! for some reason the incoming input is of type 
     # list(tensor(1,?,W,H,C)) when the input should be tensor(N,W,H,C)
 
