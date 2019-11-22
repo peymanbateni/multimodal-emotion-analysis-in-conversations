@@ -28,6 +28,7 @@ def video_to_tensor(video_file):
         fc += 1
 
     cap.release()
+
     return torch.tensor(buf)
 
 class Dialogue(object):

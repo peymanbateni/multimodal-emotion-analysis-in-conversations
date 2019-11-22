@@ -20,7 +20,7 @@ video = dataset[3][0][1][0]
 
 print(dataset[3][0])
 
-face_tensors = detect_faces_mtcnn(video, display_images=True)
+face_tensors = detect_faces_mtcnn(video, display_images=False)
 embeddings = get_face_embeddings(face_tensors)
 
 def mse(vector):
@@ -32,4 +32,4 @@ def mse(vector):
 
 print(torch.sum(embeddings, axis=2))
 print([mse(vector) for vector in embeddings])
-# TODO: weirdly the facenet features don't return 0 for empty image. 
+# TODO: weirdly the facenet features don't return 0 for empty image.

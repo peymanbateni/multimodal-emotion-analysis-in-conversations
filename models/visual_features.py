@@ -7,6 +7,18 @@ from torch_mtcnn import detect_faces
 import torch
 from facenet_pytorch import MTCNN, InceptionResnetV1
 
+class FaceModule(torch.nn.Module):
+    def __init__(self, output_size=128, max_persons=7):
+        super(FaceModule, self).__init__()
+        self.output_size = output_size
+        self.max_persons = max_persons
+    
+    def forward(self, video_input):
+        faces_tensor = detect_faces_mtcnn(video_input)
+        print(faces_tensor.size())
+        faces_embeddings = get_face_embeddings(faces_tensor)
+        print(len(faces_embeddings))
+
 """
 Currently, two methods for extracting bounding-boxes on faces have been tested,
 a prebuilt mtcnn library and an OpenCV method based on Haar Cascades. So far,
@@ -40,7 +52,13 @@ def detect_faces_mtcnn(video_tensor, max_persons=7, output_size=160, sampling_ra
     # Istantiate mtcnn detector
     mtcnn = MTCNN(image_size=output_size, margin=0, keep_all=True)
 
-    #print(video_tensor.shape)
+    print(len(video_tensor))
+    print(video_tensor[0].shape)
+    #TODO: fix me! for some reason the incoming input is of type 
+    # list(tensor(1,?,W,H,C)) when the input should be tensor(N,W,H,C)
+
+    #Hack to make it run but needs to be fixed as is not using all elements in the list 
+    video_tensor = video_tensor[0][0]
 
     # Compiling sampling and pass into MTCNN, currently this is quite wasteful
     # as we are converting to numpy array then to PIL image then it gets converted
@@ -62,7 +80,9 @@ def detect_faces_mtcnn(video_tensor, max_persons=7, output_size=160, sampling_ra
     # tensor appended by 0's
     target = torch.zeros(len(images), max_persons, 3, output_size, output_size)
     for idx, image in enumerate(images):
-        target[idx, :image.shape[0]] = image
+        #TODO: not really sure why but sometimes None is returned so this check is neccesary
+        if image is not None:
+            target[idx, :image.shape[0]] = image
 
     print(target.shape)
     if display_images:
@@ -125,7 +145,7 @@ def detect_faces_cascade(video_tensor, cascade_path, display_images=False):
 
     Must provide a path to the cascade xml file.
     """
-    faceCascade = cv2.CascadeClassifier(path)
+    faceCascade = cv2.CascadeClassifier(cascade_path)
 
     total_predictions = []
 
