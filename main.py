@@ -42,7 +42,7 @@ test_dataset = MELDDataset("../MELD.Raw/test_sent_emo.csv", "/MELD.Raw/output_re
 #print(utterance.load_video().shape)
 #dataset_loader.load_image("../MELD.Raw/image.png")
 
-def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentiment, train_data_loader, val_data_loader, epochs=20):
+def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentiment, train_data_loader, val_data_loader, epochs=5):
 
     # dummpy value of 0as a lower bound for the accuracy
     best_emotion_accuracy_so_far = 0
@@ -236,7 +236,7 @@ dumb_model = DummyModel()
 config = Config()
 emotion_criterion = nn.CrossEntropyLoss()
 sentiment_criterion = nn.CrossEntropyLoss()
-model_name = "DialogueGCN"
+model_name = "DialogueGCN-Fixed"
 #train_loader = DataLoader(train_dataset, batch_size=100, shuffle=True)
 #val_loader = DataLoader(val_dataset, batch_size=100, shuffle=True)
 #test_loader = DataLoader(test_dataset, batch_size=100, shuffle=True)
@@ -256,5 +256,5 @@ else:
 optimisation_unit = optim.Adam(model.parameters(), lr=0.001)
 
 for i in range(10):
-    train_and_validate(model_name, model, optimisation_unit, emotion_criterion, sentiment_criterion, train_loader, val_loader)
-    test_model(model_name, model, test_loader)
+    train_and_validate(model_name + str(i), model, optimisation_unit, emotion_criterion, sentiment_criterion, train_loader, val_loader)
+    test_model(model_name + str(i), model, test_loader)
