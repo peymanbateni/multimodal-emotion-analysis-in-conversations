@@ -32,4 +32,4 @@ def mse(vector):
 
 print(torch.sum(embeddings, axis=2))
 print([mse(vector) for vector in embeddings])
-# TODO: weirdly the facenet features don't return 0 for empty image. 
+# TODO: weirdly the facenet features don't return 0 for empty image.

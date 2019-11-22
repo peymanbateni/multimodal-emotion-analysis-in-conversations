@@ -20,6 +20,8 @@ def video_to_tensor(video_file):
 
     buf = np.empty((frameCount, frameHeight, frameWidth, 3), np.dtype('uint8'))
 
+    print(buf)
+
     fc = 0
     ret = True
 
@@ -28,6 +30,9 @@ def video_to_tensor(video_file):
         fc += 1
 
     cap.release()
+
+    print(buf)
+
     return torch.tensor(buf)
 
 class Dialogue(object):
