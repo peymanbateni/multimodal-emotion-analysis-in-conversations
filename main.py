@@ -36,9 +36,9 @@ train_audio_emb, val_audio_emb, test_audio_emb = pickle.load(open(audio_embed_pa
 #print(utterance.load_audio()[1].shape)
 #print(utterance.load_video().shape)
 
-val_dataset = MELDDataset("../MELD.Raw/dev_sent_emo.csv", "/MELD.Raw/dev_splits_complete/", val_audio_emb)
-train_dataset = MELDDataset("../MELD.Raw/train_sent_emo.csv", "/MELD.Raw/train_splits/", train_audio_emb)
-test_dataset = MELDDataset("../MELD.Raw/test_sent_emo.csv", "/MELD.Raw/output_repeated_splits_test", test_audio_emb)
+val_dataset = MELDDataset("../MELD.Raw/dev_sent_emo.csv", "../MELD.Raw/dev_splits_complete/", val_audio_emb)
+train_dataset = MELDDataset("../MELD.Raw/train_sent_emo.csv", "../MELD.Raw/train_splits/", train_audio_emb)
+test_dataset = MELDDataset("../MELD.Raw/test_sent_emo.csv", "../MELD.Raw/output_repeated_splits_test", test_audio_emb)
 #utterance = Utterance("", 1, 1, 1, "../MELD.Raw/dev_splits_complete/dia0_utt0.mp4", None)
 #print(utterance.load_video().shape)
 #dataset_loader.load_image("../MELD.Raw/image.png")
@@ -53,7 +53,7 @@ def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentimen
         model = model.train()
         loss_acc = 0
         total_epoch_loss = 0
-        for i, (batch_input, batch_labels) in enumerate(train_data_loader):
+        for i, (batch_input, batch_labels) in enumerate(train_data_loader):    
             batch_loss = train_step(model, batch_input, batch_labels, loss_emotion, loss_sentiment, optimiser)
             loss_acc += batch_loss
             total_epoch_loss += batch_loss
@@ -190,16 +190,16 @@ def test_model(model_name, model, test_loader):
     sentiment_target_labels = torch.cat(sentiment_target_labels, 0)
     target_labels = torch.cat([emotion_target_labels.unsqueeze(1), sentiment_target_labels.unsqueeze(1)], 1).cuda()
 
-    emotion_accuracy, sentiment_accuracy = get_accuracy(emotion_predicted_labels, sentiment_predicted_labels, target_labels)
-    emotion_recalls, sentiment_recalls = get_recall_for_each_class(emotion_predicted_labels, sentiment_predicted_labels, target_labels)
-    emotion_precisions, sentiment_precisions = get_precision_for_each_class(emotion_predicted_labels, sentiment_predicted_labels, target_labels)
-    emotion_f1s, sentiment_f1s = get_f1_score_for_each_class(emotion_precisions, emotion_recalls, sentiment_precisions, sentiment_recalls)
-    emotion_weighted_f1, sentiment_weighted_f1 = get_weighted_F1(emotion_f1s, sentiment_f1s, target_labels)
+    emotion_f1_score = f1_score(emotion_target_labels.cpu().numpy(), emotion_predicted_labels.cpu().numpy(), average='weighted')        
 
-    print("Test Accuracy (Emotion): ", emotion_accuracy)
-    print("F1", emotion_f1s)
-    print("F1 Mean ", torch.FloatTensor(list(emotion_f1s.values())).mean().item())
-    print("F1 Weighted", emotion_weighted_f1.item())
+    emotion_accuracy, sentiment_accuracy = get_accuracy(emotion_predicted_labels, sentiment_predicted_labels, target_labels)
+    #emotion_recalls, sentiment_recalls = get_recall_for_each_class(emotion_predicted_labels, sentiment_predicted_labels, target_labels)
+    #emotion_precisions, sentiment_precisions = get_precision_for_each_class(emotion_predicted_labels, sentiment_predicted_labels, target_labels)
+    #emotion_f1s, sentiment_f1s = get_f1_score_for_each_class(emotion_precisions, emotion_recalls, sentiment_precisions, sentiment_recalls)
+    #emotion_weighted_f1, sentiment_weighted_f1 = get_weighted_F1(emotion_f1s, sentiment_f1s, target_labels)
+
+    print("Validation Accuracy (Emotion): ", emotion_accuracy)
+    print("F1 Weighted", emotion_f1_score)
 
 def train_step(model, input, target, loss_emotion, loss_sentiment, optimiser):
     """Trains model for one batch of data."""
@@ -210,6 +210,7 @@ def train_step(model, input, target, loss_emotion, loss_sentiment, optimiser):
     #batch_loss_sentiment = loss_sentiment(batch_output_sentiment, target[1])
     total_loss = batch_loss_emotion# + batch_loss_sentiment
     total_loss.backward()
+    torch.nn.utils.clip_grad_norm_(model.parameters(), 1)
     optimiser.step()
     return total_loss.item()
 
@@ -254,7 +255,11 @@ else:
     model = DialogueGCN(config)
     model.to("cuda")
 
-optimisation_unit = optim.Adam(model.parameters(), lr=0.001)
+#model.load_state_dict(torch.load('model_saves/DialogueGCN_epoch12.pt')['model_state_dict'])
+#model.eval()
+#test_model('gcn_13', model, test_loader)
+#return
+optimisation_unit = optim.Adam(model.parameters(), lr=0.0005, weight_decay=0.00001)
 
 for i in range(10):
     train_and_validate(model_name + str(i), model, optimisation_unit, emotion_criterion, sentiment_criterion, train_loader, val_loader)
