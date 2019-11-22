@@ -122,7 +122,7 @@ def get_face_embeddings(face_tensor):
 #
 #         image_np = image.numpy()
 #
-#         image_pil = Image.fromarray(image_np.shape)
+#         image_pil = Image.fromarray(image_np)
 #         predictions, landmarks = detect_faces(image_pil)
 #
 #         print("Detected {} faces!".format(len(predictions)))
