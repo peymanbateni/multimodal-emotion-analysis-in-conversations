@@ -153,10 +153,10 @@ class ResNet_AT(nn.Module):
         assert phrase == 'train' or phrase == 'eval'
         assert AT_level == 'first_level' or AT_level == 'second_level' or AT_level == 'pred'
         if phrase == 'train':
-            num_pair = 3
+            num_pair = 1
 
             for i in range(num_pair):
-                f = x[:, :, :, :, i]  # x[128,3,224,224]
+                f = x[i, :, :, :, :]  # x[128,3,224,224]
 
                 f = self.conv1(f)
                 f = self.bn1(f)
@@ -199,6 +199,7 @@ class ResNet_AT(nn.Module):
                 output = self.dropout2(output)
                 pred_score = self.pred_fc2(output)
 
+            #print(pred_score)
             return pred_score
 
         if phrase == 'eval':

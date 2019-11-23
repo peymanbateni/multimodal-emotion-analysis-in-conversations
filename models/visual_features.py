@@ -8,7 +8,7 @@ import torch
 from facenet_pytorch import MTCNN, InceptionResnetV1
 
 class FaceModule(torch.nn.Module):
-    def __init__(self, output_size=224, max_persons=5):
+    def __init__(self, output_size=224, max_persons=2):
         super(FaceModule, self).__init__()
         self.output_size = output_size
         self.max_persons = max_persons
@@ -66,6 +66,10 @@ def detect_faces_mtcnn(video_tensor, max_persons=7, output_size=160, sampling_ra
         image_pil = Image.fromarray(image_np)
         video.append(image_pil)
     #print(len(video))
+    #print(video[0].size)
+
+    # TODO: for some reason the following call errors out sometimes, might be a bug in the 
+    # library implementation in which case we might need to clone the repo and modify it ourselves 
     images = mtcnn(video)
     #print(len(images))
     #print(images[0].shape)
@@ -73,14 +77,16 @@ def detect_faces_mtcnn(video_tensor, max_persons=7, output_size=160, sampling_ra
     # pad with empty tensors if neccesary:
     # in the case where there are fewer than max_persons detected, return
     # tensor appended by 0's
-    if len(images) > max_persons:
-        images = images[:max_persons]
+    #if len(images) > max_persons:
+    #    images = images[:max_persons]
+
+    #print(images.shape)
 
     target = torch.zeros(len(images), max_persons, 3, output_size, output_size)
     for idx, image in enumerate(images):
         #TODO: not really sure why but sometimes None is returned so this check is neccesary
         if image is not None:
-            target[idx, :image.shape[0]] = image
+            target[idx, :image.shape[0]] = image[:max_persons]
 
     #print(target.shape)
     if display_images:
