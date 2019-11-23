@@ -1,6 +1,10 @@
 # multimodal_conversational_analysis
 Signal processing course project! In this project, we aim to produce a model on conversational sentiment and emotion analysis that uses visual features in addition to the audio and textual features previously used. The goal of the project is to produce a novel model that (hopefully) achieves better results than the previously published works.
 
+Pytorch Facenet source: https://github.com/timesler/facenet-pytorch
+
+Frame Attention Network source: https://github.com/Open-Debin/Emotion-FAN
+
 # Milestones
 - We're currently in the process of running the first round of experiments on the baselines. The lack of availability of public repositories for the SOTA paper, namely DialogueGCN, has slowed us down as we're implementing their (quite large and detailed) methods from scratch. That said our pre-processing code is ready (and tested using a dummy model), and we're very close to finishing up on the bugs on the model. We expect to have the experiments be running by next week.
 - We've already done our research on using attention masks to visually use the videos in the model and have already formulated the algorithmic extension to DialogueGCN. The bottleneck is again finishing up implementing their base model.
