@@ -37,11 +37,10 @@ class ExpressionDetector(torch.nn.Module):
         structure = frame_attention_network.resnet18_AT(at_type=0)
         parameter_dir = './parameters/Resnet18_FER+_pytorch.pth.tar'
         self.frame_attention_network = load_parameter(structure, parameter_dir)
+        print(self.frame_attention_network)
         self.face_detecor = visual_features.FaceModule()
 
     def forward(self, x):
         transcript, video, audio, speakers = x
         faces_vector = self.face_detecor(video)
         return self.frame_attention_network(faces_vector)
-
-print(model)
