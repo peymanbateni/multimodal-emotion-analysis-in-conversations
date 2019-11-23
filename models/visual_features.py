@@ -14,9 +14,10 @@ class FaceModule(torch.nn.Module):
         self.max_persons = max_persons
     
     def forward(self, video_input):
-        faces_tensor = detect_faces_mtcnn(video_input)
+        #TODO: this still probably is not the best way to do this in a loop
+        faces_vector = [detect_faces_mtcnn(video.squeeze(0)) for video in video_input]
         #print(faces_tensor.size())
-        faces_embeddings = get_face_embeddings(faces_tensor)
+        faces_embeddings = [get_face_embeddings(faces) for faces in faces_vector]
         #print(len(faces_embeddings))
         #print("Got here!")
 
@@ -52,14 +53,6 @@ def detect_faces_mtcnn(video_tensor, max_persons=7, output_size=160, sampling_ra
     """
     # Istantiate mtcnn detector
     mtcnn = MTCNN(image_size=output_size, margin=0, keep_all=True)
-
-    print(len(video_tensor))
-    print(video_tensor[0].shape)
-    #TODO: fix me! for some reason the incoming input is of type 
-    # list(tensor(1,?,W,H,C)) when the input should be tensor(N,W,H,C)
-
-    #Hack to make it run but needs to be fixed as is not using all elements in the list 
-    video_tensor = video_tensor[0][0]
 
     # Compiling sampling and pass into MTCNN, currently this is quite wasteful
     # as we are converting to numpy array then to PIL image then it gets converted

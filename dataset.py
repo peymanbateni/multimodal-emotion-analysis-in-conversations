@@ -28,7 +28,6 @@ def video_to_tensor(video_file):
         fc += 1
 
     cap.release()
-
     return torch.tensor(buf)
 
 class Dialogue(object):
@@ -64,6 +63,7 @@ class Dialogue(object):
         """
         Method returns a list of raw video tensors for each utterance
         """
+        videos = [utterance.load_video() for utterance in self.utterances]
         return [utterance.load_video() for utterance in self.utterances]
 
     def get_audios(self):
