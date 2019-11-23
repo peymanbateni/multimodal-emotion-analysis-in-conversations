@@ -34,11 +34,11 @@ def load_parameter(_structure, _parameterDir):
 
 class ExpressionDetector(torch.nn.Module):
 
-    def __init__(self):
+    def __init__(self, parameter_path):
         super(ExpressionDetector, self).__init__()
         structure = frame_attention_network.resnet18_AT(at_type='self-attention') #or relation-attention
         #print(structure)
-        parameter_dir = './parameters/Resnet18_FER+_pytorch.pth.tar'
+        parameter_dir = parameter_path
         self.frame_attention_network = load_parameter(structure, parameter_dir)
         print(self.frame_attention_network)
         self.face_detecor = visual_features.FaceModule()
@@ -60,5 +60,5 @@ class ExpressionDetector(torch.nn.Module):
             emotion_output.append(summed_emotions.unsqueeze(0))
         
         # placeholder:
-        sentiment_output = torch.tensor(np.zeros(len(video)), dtype=torch.float)
+        sentiment_output = torch.tensor(np.zeros(len(videos)), dtype=torch.float)
         return (torch.cat(emotion_output), sentiment_output)

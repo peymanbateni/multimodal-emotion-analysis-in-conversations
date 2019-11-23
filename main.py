@@ -254,7 +254,7 @@ if config.model_type == 'dialoguegcn':
     model = DialogueGCN(config)
     model.to("cuda")
 elif config.model_type == 'fan':
-    model = ExpressionDetector()
+    model = ExpressionDetector(config.fan_weights_path)
     model.to("cuda")
 if config.model_type == 'dummy':
     model = DummyModel()
