@@ -9,6 +9,6 @@ class Config:
         self.audio_out_dim = 100
         self.vis_in_dim = 100
         self.vis_out_dim = 100
-        self.use_dummy = False
+        self.model_type = 'dialoguegcn' # 'dummy', 'dialoguegcn','fan'
         self.utt_embed_size = 100
         self.att_window_size = 10

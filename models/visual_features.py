@@ -8,16 +8,17 @@ import torch
 from facenet_pytorch import MTCNN, InceptionResnetV1
 
 class FaceModule(torch.nn.Module):
-    def __init__(self, output_size=128, max_persons=7):
+    def __init__(self, output_size=224, max_persons=5):
         super(FaceModule, self).__init__()
         self.output_size = output_size
         self.max_persons = max_persons
-    
+
     def forward(self, video_input):
         #TODO: this still probably is not the best way to do this in a loop
-        faces_vector = [detect_faces_mtcnn(video.squeeze(0)) for video in video_input]
+        faces_vector = [detect_faces_mtcnn(video.squeeze(0), self.max_persons, self.output_size) for video in video_input]
         #print(faces_tensor.size())
-        faces_embeddings = [get_face_embeddings(faces) for faces in faces_vector]
+        #faces_embeddings = [get_face_embeddings(faces) for faces in faces_vector]
+        return faces_vector
         #print(len(faces_embeddings))
         #print("Got here!")
 
@@ -72,6 +73,9 @@ def detect_faces_mtcnn(video_tensor, max_persons=7, output_size=160, sampling_ra
     # pad with empty tensors if neccesary:
     # in the case where there are fewer than max_persons detected, return
     # tensor appended by 0's
+    if len(images) > max_persons:
+        images = images[:max_persons]
+
     target = torch.zeros(len(images), max_persons, 3, output_size, output_size)
     for idx, image in enumerate(images):
         #TODO: not really sure why but sometimes None is returned so this check is neccesary
