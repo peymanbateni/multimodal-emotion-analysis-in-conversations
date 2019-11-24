@@ -60,5 +60,5 @@ class ExpressionDetector(torch.nn.Module):
             emotion_output.append(summed_emotions.unsqueeze(0))
         
         # placeholder:
-        sentiment_output = torch.tensor(np.zeros(len(videos)), dtype=torch.float)
+        sentiment_output = torch.tensor(np.zeros(len(faces_vector)), dtype=torch.float)
         return (torch.cat(emotion_output), sentiment_output)
