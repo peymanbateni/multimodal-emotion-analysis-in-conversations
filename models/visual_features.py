@@ -57,6 +57,7 @@ def detect_faces_mtcnn(video_tensor, max_persons=7, output_size=160, sampling_ra
 
     NB: output tensor is normalized
     """
+
     # Istantiate mtcnn detector
     mtcnn = MTCNN(image_size=output_size, margin=0, keep_all=True)
 
@@ -72,6 +73,11 @@ def detect_faces_mtcnn(video_tensor, max_persons=7, output_size=160, sampling_ra
         video.append(image_pil)
     #print(len(video))
     #print(video[0].size)
+
+    if len(video) == 0:
+
+        # TODO: fix return an empty tensor if length of image is 0
+        return torch.zeros(1, max_persons, 3, output_size, output_size)
 
     # TODO: for some reason the following call errors out sometimes, might be a bug in the
     # library implementation in which case we might need to clone the repo and modify it ourselves
