@@ -7,7 +7,7 @@ from dummy_model import DummyModel
 from torch.utils.data import DataLoader
 from models.config import Config
 from models.dialogue_gcn import DialogueGCN
-from models.expression_detecor import ExpressionDetector
+from models.expression_detector import ExpressionDetector
 from sklearn.metrics import f1_score
 
 #audio_embed_path = "../MELD.Features.Models/features/audio_embeddings_feature_selection_emotion.pkl"
@@ -253,8 +253,8 @@ test_loader = DataLoader(test_dataset, batch_size=1, shuffle=True)
 if config.model_type == 'dialoguegcn':
     model = DialogueGCN(config)
     model.to("cuda")
-elif config.model_type = 'fan':
-    model = ExpressionDetector()
+elif config.model_type == 'fan':
+    model = ExpressionDetector(config.fan_weights_path)
     model.to("cuda")
 if config.model_type == 'dummy':
     model = DummyModel()

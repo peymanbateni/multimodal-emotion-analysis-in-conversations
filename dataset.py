@@ -147,12 +147,14 @@ class Utterance(object):
         """
         Returns a tuple of the integer-mapped label as (emotion, sentiment)
         """
+        #print(self.emotion)
         return (self.emotion, self.sentiment)
 
     def load_video(self):
         """
         Loads the video into memory and converts the frames into a pyTorch tensor
         """
+        #print(self.file_path)
         return video_to_tensor(self.file_path)
 
     def load_audio(self):
@@ -197,7 +199,11 @@ class MELDDataset(Dataset):
 
         # TODO: we have combination mappings right now (eg. "Monica and Rachael")
         self.speaker_mapping = {speaker: id for id, speaker in enumerate(speaker_set)}
-        self.emotion_mapping = {emotion: id for id, emotion in enumerate(emotion_set)}
+        #self.emotion_mapping = {emotion: id for id, emotion in enumerate(emotion_set)}
+
+        # ported from the mapping used for frame attention network 
+        self.emotion_mapping = {"joy": 0, "anger": 1, "disgust": 2, "fear": 3, "sadness": 4, "neutral": 5, "surprise": 6}
+        print(self.emotion_mapping)
         self.sentiment_mapping = {sentiment: id for id, sentiment in enumerate(sentiment_set)}
 
 #        print("Speaker mapping: {}".format(self.speaker_mapping))

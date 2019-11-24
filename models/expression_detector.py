@@ -8,6 +8,7 @@ import torch.nn as nn
 import torch.nn.parallel
 import torch.optim
 import torch.utils.data
+import numpy as np
 from models import frame_attention_network
 from models import visual_features
 
@@ -33,15 +34,31 @@ def load_parameter(_structure, _parameterDir):
 
 class ExpressionDetector(torch.nn.Module):
 
-    def __init__(self):
-        structure = frame_attention_network.resnet18_AT(at_type=0)
-        parameter_dir = './parameters/Resnet18_FER+_pytorch.pth.tar'
+    def __init__(self, parameter_path):
+        super(ExpressionDetector, self).__init__()
+        structure = frame_attention_network.resnet18_AT(at_type='self-attention') #or relation-attention
+        #print(structure)
+        parameter_dir = parameter_path
         self.frame_attention_network = load_parameter(structure, parameter_dir)
+        print(self.frame_attention_network)
         self.face_detecor = visual_features.FaceModule()
 
     def forward(self, x):
-        transcript, video, audio, speakers = x
-        faces_vector = self.face_detecor(video)
-        return self.frame_attention_network(faces_vector)
+        transcript, videos, audio, speakers = x
 
-print(model)
+        # USING FACE DETECTOR 
+        
+        faces_vector = self.face_detecor(videos)
+        emotion_output = []
+        for faces in faces_vector:
+            # note each of these is all the faces in one utterances (N, C, W, H)
+            emotions = self.frame_attention_network(faces)
+            summed_emotions = torch.sum(emotions, axis=0)
+            print(len(faces))
+            print(emotions)
+            print(summed_emotions)
+            emotion_output.append(summed_emotions.unsqueeze(0))
+        
+        # placeholder:
+        sentiment_output = torch.tensor(np.zeros(len(videos)), dtype=torch.float)
+        return (torch.cat(emotion_output), sentiment_output)

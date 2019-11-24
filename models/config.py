@@ -10,5 +10,6 @@ class Config:
         self.vis_in_dim = 100
         self.vis_out_dim = 100
         self.model_type = 'dialoguegcn' # 'dummy', 'dialoguegcn','fan'
+        self.fan_weights_path = './parameters/Resnet18_FER+_pytorch.pth.tar'
         self.utt_embed_size = 100
         self.att_window_size = 10
