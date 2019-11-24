@@ -52,7 +52,7 @@ class ExpressionDetector(torch.nn.Module):
         emotion_output = []
         for faces in faces_vector:
             # note each of these is all the faces in one utterances (N, C, W, H)
-            emotions = self.frame_attention_network(faces)
+            emotions = self.frame_attention_network(faces.squeeze(0))
             summed_emotions = torch.sum(emotions, axis=0)
             print(len(faces))
             print(emotions)

@@ -5,6 +5,7 @@ import cv2
 from PIL import Image
 from torch_mtcnn import detect_faces
 import torch
+import os
 from facenet_pytorch_local.models.mtcnn import MTCNN
 from facenet_pytorch_local.models.inception_resnet_v1 import InceptionResnetV1
 
@@ -16,10 +17,10 @@ class FaceModule(torch.nn.Module):
 
     def forward(self, video_input):
         #TODO: this still probably is not the best way to do this in a loop
-        faces_vector = [detect_faces_mtcnn(video.squeeze(0), self.max_persons, self.output_size) for video in video_input]
+        #faces_vector = [detect_faces_mtcnn(video.squeeze(0), self.max_persons, self.output_size) for video in video_input]
         #print(faces_tensor.size())
         #faces_embeddings = [get_face_embeddings(faces) for faces in faces_vector]
-        return faces_vector
+        return video_input
         #print(len(faces_embeddings))
         #print("Got here!")
 
@@ -30,6 +31,7 @@ mtcnn seems significally slower than the haar cascades method, but may be due
 to the fact that it was run on cpu. Haar cascades is fast, but fails at detecting
 side profiles and also produces false positives
 """
+
 def detect_faces_mtcnn(video_tensor, max_persons=7, output_size=160, sampling_rate=30, display_images=False):
     """
     Method for detecing faces on an input video Tensor using an implementation of
