@@ -50,7 +50,7 @@ class ExpressionDetector(torch.nn.Module):
         
         #faces_vector = self.face_detecor(videos)
         emotion_output = []
-        for video in faces_vector:
+        for faces in faces_vector:
             # note each of these is all the faces in one utterances (N, C, W, H)
             emotions = self.frame_attention_network(faces.squeeze(0))
             summed_emotions = torch.sum(emotions, axis=0)
