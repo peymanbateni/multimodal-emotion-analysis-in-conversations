@@ -5,7 +5,8 @@ import cv2
 from PIL import Image
 from torch_mtcnn import detect_faces
 import torch
-from facenet_pytorch import MTCNN, InceptionResnetV1
+from facenet_pytorch_local.models.mtcnn import MTCNN
+from facenet_pytorch_local.models.inception_resnet_v1 import InceptionResnetV1
 
 class FaceModule(torch.nn.Module):
     def __init__(self, output_size=224, max_persons=2):
@@ -68,8 +69,8 @@ def detect_faces_mtcnn(video_tensor, max_persons=7, output_size=160, sampling_ra
     #print(len(video))
     #print(video[0].size)
 
-    # TODO: for some reason the following call errors out sometimes, might be a bug in the 
-    # library implementation in which case we might need to clone the repo and modify it ourselves 
+    # TODO: for some reason the following call errors out sometimes, might be a bug in the
+    # library implementation in which case we might need to clone the repo and modify it ourselves
     images = mtcnn(video)
     #print(len(images))
     #print(images[0].shape)
