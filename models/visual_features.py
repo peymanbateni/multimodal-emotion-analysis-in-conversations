@@ -9,6 +9,8 @@ import os
 from facenet_pytorch_local.models.mtcnn import MTCNN
 from facenet_pytorch_local.models.inception_resnet_v1 import InceptionResnetV1
 
+
+# NOT being used right now 
 class FaceModule(torch.nn.Module):
     def __init__(self, output_size=224, max_persons=2):
         super(FaceModule, self).__init__()

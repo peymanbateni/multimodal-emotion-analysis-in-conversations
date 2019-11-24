@@ -69,6 +69,9 @@ class Dialogue(object):
         return [utterance.load_video() for utterance in self.utterances]
 
     def get_visual_features(self):
+        """
+        Method returns a list of visual features
+        """
 
         features = [utterance.get_cached_visual_features() for utterance in self.utterances]
         return features
@@ -105,6 +108,14 @@ class Dialogue(object):
         Method returns all the inputs as a tuple of list. Each list corresponds
         to the input of a specific modality for each utterance. The returned
         data is in the following format:
+
+        if self.visual_features is true:
+
+            returns video is a list of tensors representing faces detected for each utterances 
+
+        else 
+
+            video returns the raw video tensors
 
         ([transcripts], [video], [audio_embeddings], [speakers])
         """
@@ -203,6 +214,11 @@ class MELDDataset(Dataset):
 
         ([transcript], [video], [audio]) ([emotion_label], [sentiment_label])
 
+    if visual_features = True,
+
+        video is a list of face tensors detected by the mtcnn network
+        otherwise, video is raw video tensors 
+    
     Attributes:
 
     csv_recods: pandas representation of csv file

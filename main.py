@@ -37,9 +37,9 @@ train_audio_emb, val_audio_emb, test_audio_emb = pickle.load(open(audio_embed_pa
 #print(utterance.load_audio()[1].shape)
 #print(utterance.load_video().shape)
 
-val_dataset = MELDDataset("../MELD.Raw/dev_sent_emo.csv", "../MELD.Raw/dev_splits_complete/", val_audio_emb, visual_features=False)
-train_dataset = MELDDataset("../MELD.Raw/train_sent_emo.csv", "../MELD.Raw/train_splits/", train_audio_emb, visual_features=False)
-test_dataset = MELDDataset("../MELD.Raw/test_sent_emo.csv", "../MELD.Raw/output_repeated_splits_test", test_audio_emb, visual_features=False)
+val_dataset = MELDDataset("../MELD.Raw/dev_sent_emo.csv", "../MELD.Raw/dev_splits_complete/", val_audio_emb, visual_features=True)
+train_dataset = MELDDataset("../MELD.Raw/train_sent_emo.csv", "../MELD.Raw/train_splits/", train_audio_emb, visual_features=True)
+test_dataset = MELDDataset("../MELD.Raw/test_sent_emo.csv", "../MELD.Raw/output_repeated_splits_test", test_audio_emb, visual_features=True)
 #utterance = Utterance("", 1, 1, 1, "../MELD.Raw/dev_splits_complete/dia0_utt0.mp4", None)
 #print(utterance.load_video().shape)
 #dataset_loader.load_image("../MELD.Raw/image.png")

@@ -44,19 +44,19 @@ class ExpressionDetector(torch.nn.Module):
         self.face_detecor = visual_features.FaceModule()
 
     def forward(self, x):
-        transcript, videos, audio, speakers = x
+        transcript, faces_vector, audio, speakers = x
 
         # USING FACE DETECTOR 
         
-        faces_vector = self.face_detecor(videos)
+        #faces_vector = self.face_detecor(videos)
         emotion_output = []
-        for faces in faces_vector:
+        for video in faces_vector:
             # note each of these is all the faces in one utterances (N, C, W, H)
             emotions = self.frame_attention_network(faces.squeeze(0))
             summed_emotions = torch.sum(emotions, axis=0)
-            print(len(faces))
-            print(emotions)
-            print(summed_emotions)
+            #print(len(faces))
+            #print(emotions)
+            #print(summed_emotions)
             emotion_output.append(summed_emotions.unsqueeze(0))
         
         # placeholder:
