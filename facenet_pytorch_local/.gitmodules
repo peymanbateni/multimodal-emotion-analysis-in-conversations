@@ -1,3 +1,0 @@
-[submodule "dependencies/facenet"]
-	path = dependencies/facenet
-	url = https://github.com/davidsandberg/facenet.git
