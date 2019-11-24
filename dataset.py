@@ -9,6 +9,7 @@ import os
 import cv2
 from scipy.io import wavfile
 import pickle
+from models.visual_features import detect_faces_mtcnn
 
 def video_to_tensor(video_file):
     """ Converts a mp4 file into a pytorch tensor"""
@@ -34,9 +35,10 @@ class Dialogue(object):
     """
     Class for representing a dialogue as a list of utterances
     """
-    def __init__(self, id, utterances):
+    def __init__(self, id, utterances, visual_features=False):
         self.dialogue_id = id
         self.utterances = utterances
+        self.visual_features = visual_features
         self.reparameterize_speakers()
 
     def reparameterize_speakers(self):
@@ -63,8 +65,16 @@ class Dialogue(object):
         """
         Method returns a list of raw video tensors for each utterance
         """
-        videos = [utterance.load_video() for utterance in self.utterances]
+        #videos = [utterance.load_video() for utterance in self.utterances]
         return [utterance.load_video() for utterance in self.utterances]
+
+    def get_visual_features(self):
+        """
+        Method returns a list of visual features
+        """
+
+        features = [utterance.get_cached_visual_features() for utterance in self.utterances]
+        return features
 
     def get_audios(self):
         """
@@ -99,10 +109,21 @@ class Dialogue(object):
         to the input of a specific modality for each utterance. The returned
         data is in the following format:
 
+        if self.visual_features is true:
+
+            returns video is a list of tensors representing faces detected for each utterances 
+
+        else 
+
+            video returns the raw video tensors
+
         ([transcripts], [video], [audio_embeddings], [speakers])
         """
         transcripts = self.get_transcripts()
-        video = self.get_videos()
+        if self.visual_features:
+            video = self.get_visual_features()
+        else:
+            video = self.get_videos()
         audio = self.get_audios()
         speaker = self.get_speakers()
 
@@ -157,6 +178,25 @@ class Utterance(object):
         #print(self.file_path)
         return video_to_tensor(self.file_path)
 
+    def get_cached_visual_features(self, max_persons=7, output_size=224, sampling_rate=30, display_images=False):
+
+        cache_path = './cache'
+        setting_path = os.path.join(cache_path, 'persons_{}_rate_{}_size_{}'.format(max_persons, sampling_rate, output_size))
+        file_path = os.path.join(setting_path, 'dia_{}_utt_{}.pth'.format(self.dialogue_id, self.utterance_id))
+        if not os.path.exists(cache_path):
+            os.mkdir(cache_path)
+        if not os.path.exists(setting_path):
+            os.mkdir(setting_path)
+        if not os.path.exists(file_path):
+            print("No cached features found, generating new features for dialogue: {}, utterance: {} ({}, {}, {})".format(self.dialogue_id, self.utterance_id, max_persons, sampling_rate, output_size))
+            video_tensor = self.load_video()
+            face_vector = detect_faces_mtcnn(video_tensor, max_persons, output_size, sampling_rate, display_images)
+            torch.save(face_vector, file_path)
+        else:
+            print("Retrieved cached visual features for dialogue: {}, utterance: {} ({}, {}, {})".format(self.dialogue_id, self.utterance_id, max_persons, sampling_rate, output_size))
+        #print(torch.load(file_path))
+        return torch.load(file_path)
+
     def load_audio(self):
         """
         Returns the Audio embeddings.
@@ -174,6 +214,11 @@ class MELDDataset(Dataset):
 
         ([transcript], [video], [audio]) ([emotion_label], [sentiment_label])
 
+    if visual_features = True,
+
+        video is a list of face tensors detected by the mtcnn network
+        otherwise, video is raw video tensors 
+    
     Attributes:
 
     csv_recods: pandas representation of csv file
@@ -189,7 +234,7 @@ class MELDDataset(Dataset):
     load_sample_video(index): loads the video tensor retrieved from index
     """
 
-    def __init__(self, csv_file, root_dir, audio_embs):
+    def __init__(self, csv_file, root_dir, audio_embs, visual_features=False):
         self.csv_records = pd.read_csv(csv_file)
         self.root_dir = os.path.abspath(root_dir)
 
@@ -242,7 +287,7 @@ class MELDDataset(Dataset):
             # Assumes no gaps in dialogue id
             # Assumes no gaps in utterance ids
             utteraences = utterances.sort(key=lambda x: x.utterance_id)
-            self.data.append(Dialogue(d_id, utterances))
+            self.data.append(Dialogue(d_id, utterances, visual_features=visual_features))
 
     def __len__(self):
         return len(self.data)

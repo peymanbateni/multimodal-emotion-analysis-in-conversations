@@ -131,8 +131,14 @@ def detect_face(imgs, minsize, pnet, rnet, onet, threshold, factor, device):
 
         batch_boxes.append(total_boxes)
         batch_points.append(points)
+    #print(len(batch_points))
+    #print(len(batch_boxes))
+    #print(batch_points[0].shape)
+    #print(batch_points)
+    #batch_boxes = np.array(batch_boxes)
+    #batch_points = np.array(batch_points)
 
-    return np.array(batch_boxes), np.array(batch_points)
+    return batch_boxes, np.zeros((len(batch_points),2,5,0))
 
 
 def bbreg(boundingbox, reg):
