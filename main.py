@@ -18,7 +18,6 @@ audio_embed_path = "../MELD.Raw/audio_embeddings_feature_selection_sentiment.pkl
 train_audio_emb, val_audio_emb, test_audio_emb = pickle.load(open(audio_embed_path, 'rb'))
 config = Config()
 
-<<<<<<< HEAD
 val_dataset = MELDDataset("../MELD.Raw/dev_sent_emo.csv", "../MELD.Raw/dev_splits_complete/", val_audio_emb, name="val", visual_features=True)
 train_dataset = MELDDataset("../MELD.Raw/train_sent_emo.csv", "../MELD.Raw/train_splits/", train_audio_emb, name="train", visual_features=True, )
 if config.eval_on_test:
