@@ -37,14 +37,14 @@ train_audio_emb, val_audio_emb, test_audio_emb = pickle.load(open(audio_embed_pa
 #print(utterance.load_audio()[1].shape)
 #print(utterance.load_video().shape)
 
-val_dataset = MELDDataset("../MELD.Raw/dev_sent_emo.csv", "../MELD.Raw/dev_splits_complete/", val_audio_emb, visual_features=True)
-train_dataset = MELDDataset("../MELD.Raw/train_sent_emo.csv", "../MELD.Raw/train_splits/", train_audio_emb, visual_features=True)
-test_dataset = MELDDataset("../MELD.Raw/test_sent_emo.csv", "../MELD.Raw/output_repeated_splits_test", test_audio_emb, visual_features=True)
+val_dataset = MELDDataset("../MELD.Raw/dev_sent_emo.csv", "../MELD.Raw/dev_splits_complete/", val_audio_emb, name="val", visual_features=True,)
+train_dataset = MELDDataset("../MELD.Raw/train_sent_emo.csv", "../MELD.Raw/train_splits/", train_audio_emb, name="train", visual_features=True, )
+test_dataset = MELDDataset("../MELD.Raw/test_sent_emo.csv", "../MELD.Raw/output_repeated_splits_test", test_audio_emb, name="test", visual_features=True)
 #utterance = Utterance("", 1, 1, 1, "../MELD.Raw/dev_splits_complete/dia0_utt0.mp4", None)
 #print(utterance.load_video().shape)
 #dataset_loader.load_image("../MELD.Raw/image.png")
 
-def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentiment, train_data_loader, val_data_loader, epochs=5):
+def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentiment, train_data_loader, val_data_loader, epochs=1):
 
     # dummpy value of 0as a lower bound for the accuracy
     best_emotion_accuracy_so_far = 0
@@ -98,7 +98,7 @@ def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentimen
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimiser.state_dict(),
             'loss': total_epoch_loss
-        },  "model_saves/" + model_name + "_epoch" + str(epoch) +".pt")
+        },  "model_saves/" + model_name + "_epoch_image_only_" + str(epoch) +".pt")
         #    num_of_no_improvements = 0
         #    print("BEST VALIDATION UPDATED!")
         #else:
@@ -239,7 +239,7 @@ dumb_model = DummyModel()
 config = Config()
 emotion_criterion = nn.CrossEntropyLoss()
 sentiment_criterion = nn.CrossEntropyLoss()
-model_name = "DialogueGCN-Fixed"
+model_name = "Visual"
 #train_loader = DataLoader(train_dataset, batch_size=100, shuffle=True)
 #val_loader = DataLoader(val_dataset, batch_size=100, shuffle=True)
 #test_loader = DataLoader(test_dataset, batch_size=100, shuffle=True)
@@ -252,13 +252,13 @@ test_loader = DataLoader(test_dataset, batch_size=1, shuffle=True)
 
 if config.model_type == 'dialoguegcn':
     model = DialogueGCN(config)
-    model.to("cuda")
+    model = model.to("cuda")
 elif config.model_type == 'fan':
     model = ExpressionDetector(config.fan_weights_path)
-    model.to("cuda")
+    model = model.to("cuda")
 elif config.model_type == 'acn':
     model = AttentionConvWrapper()
-    model.to("cuda")
+    model = model.to("cuda")
 if config.model_type == 'dummy':
     model = DummyModel()
 
@@ -268,6 +268,6 @@ if config.model_type == 'dummy':
 #return
 optimisation_unit = optim.Adam(model.parameters(), lr=0.0005, weight_decay=0.00001)
 
-for i in range(10):
+for i in range(1):
     train_and_validate(model_name + str(i), model, optimisation_unit, emotion_criterion, sentiment_criterion, train_loader, val_loader)
     test_model(model_name + str(i), model, test_loader)

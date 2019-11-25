@@ -12,7 +12,10 @@ def detect_face(imgs, minsize, pnet, rnet, onet, threshold, factor, device):
         raise Exception("MTCNN batch processing only compatible with equal-dimension images.")
 
     imgs = [torch.as_tensor(np.uint8(img)).float().to(device) for img in imgs]
-    imgs = torch.stack(imgs).permute(0, 3, 1, 2)
+    if (len(imgs) == 0):
+        imgs = torch.zeros(3, 3, 720, 1280)
+    else:
+        imgs = torch.stack(imgs).permute(0, 3, 1, 2)
 
     batch_size = len(imgs)
     h, w = imgs.shape[2:4]
@@ -133,10 +136,12 @@ def detect_face(imgs, minsize, pnet, rnet, onet, threshold, factor, device):
         batch_points.append(points)
     #print(len(batch_points))
     #print(len(batch_boxes))
-    #print(batch_points[0].shape)
+    #if (len(batch_points) != 0):
+    #    print("first batch size", batch_points[0].shape)
     #print(batch_points)
     #batch_boxes = np.array(batch_boxes)
     #batch_points = np.array(batch_points)
+    #print(batch_boxes)
 
     return batch_boxes, np.zeros((len(batch_points),2,5,0))
 
