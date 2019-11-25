@@ -1,3 +1,5 @@
 __pycache__
 glove/
 model_saves/
+parameters/
+cache/

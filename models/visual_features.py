@@ -5,18 +5,24 @@ import cv2
 from PIL import Image
 from torch_mtcnn import detect_faces
 import torch
-from facenet_pytorch import MTCNN, InceptionResnetV1
+import os
+from facenet_pytorch_local.models.mtcnn import MTCNN
+from facenet_pytorch_local.models.inception_resnet_v1 import InceptionResnetV1
 
+
+# NOT being used right now 
 class FaceModule(torch.nn.Module):
-    def __init__(self, output_size=128, max_persons=7):
+    def __init__(self, output_size=224, max_persons=2):
         super(FaceModule, self).__init__()
         self.output_size = output_size
         self.max_persons = max_persons
-    
+
     def forward(self, video_input):
-        faces_tensor = detect_faces_mtcnn(video_input)
+        #TODO: this still probably is not the best way to do this in a loop
+        #faces_vector = [detect_faces_mtcnn(video.squeeze(0), self.max_persons, self.output_size) for video in video_input]
         #print(faces_tensor.size())
-        faces_embeddings = get_face_embeddings(faces_tensor)
+        #faces_embeddings = [get_face_embeddings(faces) for faces in faces_vector]
+        return video_input
         #print(len(faces_embeddings))
         #print("Got here!")
 
@@ -27,6 +33,7 @@ mtcnn seems significally slower than the haar cascades method, but may be due
 to the fact that it was run on cpu. Haar cascades is fast, but fails at detecting
 side profiles and also produces false positives
 """
+
 def detect_faces_mtcnn(video_tensor, max_persons=7, output_size=160, sampling_rate=30, display_images=False):
     """
     Method for detecing faces on an input video Tensor using an implementation of
@@ -50,9 +57,11 @@ def detect_faces_mtcnn(video_tensor, max_persons=7, output_size=160, sampling_ra
 
     NB: output tensor is normalized
     """
+
     # Istantiate mtcnn detector
     mtcnn = MTCNN(image_size=output_size, margin=0, keep_all=True)
 
+<<<<<<< HEAD
     #print(len(video_tensor))
     #print(video_tensor[0].shape)
     #TODO: fix me! for some reason the incoming input is of type 
@@ -61,6 +70,8 @@ def detect_faces_mtcnn(video_tensor, max_persons=7, output_size=160, sampling_ra
     #Hack to make it run but needs to be fixed as is not using all elements in the list 
     video_tensor = video_tensor[0][0]
 
+=======
+>>>>>>> 2288261894ec567171161039210f0b63e2f473ba
     # Compiling sampling and pass into MTCNN, currently this is quite wasteful
     # as we are converting to numpy array then to PIL image then it gets converted
     # back to torch tensor within the method, TODO: optimize data flow to
@@ -72,6 +83,10 @@ def detect_faces_mtcnn(video_tensor, max_persons=7, output_size=160, sampling_ra
         image_pil = Image.fromarray(image_np)
         video.append(image_pil)
     #print(len(video))
+    #print(video[0].size)
+
+    # TODO: for some reason the following call errors out sometimes, might be a bug in the
+    # library implementation in which case we might need to clone the repo and modify it ourselves
     images = mtcnn(video)
     #print(len(images))
     #print(images[0].shape)
@@ -79,11 +94,16 @@ def detect_faces_mtcnn(video_tensor, max_persons=7, output_size=160, sampling_ra
     # pad with empty tensors if neccesary:
     # in the case where there are fewer than max_persons detected, return
     # tensor appended by 0's
+    #if len(images) > max_persons:
+    #    images = images[:max_persons]
+
+    #print(images.shape)
+
     target = torch.zeros(len(images), max_persons, 3, output_size, output_size)
     for idx, image in enumerate(images):
         #TODO: not really sure why but sometimes None is returned so this check is neccesary
         if image is not None:
-            target[idx, :image.shape[0]] = image
+            target[idx, :image.shape[0]] = image[:max_persons]
 
     #print(target.shape)
     if display_images:

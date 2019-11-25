@@ -9,9 +9,8 @@ from models.config import Config
 from models.dialogue_gcn import DialogueGCN
 
 from torch.utils.data import ConcatDataset
-import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 from sklearn.metrics import f1_score, confusion_matrix
+from models.expression_detector import ExpressionDetector, AttentionConvWrapper
 
 #audio_embed_path = "../MELD.Features.Models/features/audio_embeddings_feature_selection_emotion.pkl"
 audio_embed_path = "../MELD.Raw/audio_embeddings_feature_selection_sentiment.pkl"
@@ -19,14 +18,14 @@ audio_embed_path = "../MELD.Raw/audio_embeddings_feature_selection_sentiment.pkl
 train_audio_emb, val_audio_emb, test_audio_emb = pickle.load(open(audio_embed_path, 'rb'))
 config = Config()
 
-val_dataset = MELDDataset("../MELD.Raw/dev_sent_emo.csv", "../MELD.Raw/dev_splits_complete/", val_audio_emb)
-train_dataset = MELDDataset("../MELD.Raw/train_sent_emo.csv", "../MELD.Raw/train_splits/", train_audio_emb)
+<<<<<<< HEAD
+val_dataset = MELDDataset("../MELD.Raw/dev_sent_emo.csv", "../MELD.Raw/dev_splits_complete/", val_audio_emb, name="val", visual_features=True)
+train_dataset = MELDDataset("../MELD.Raw/train_sent_emo.csv", "../MELD.Raw/train_splits/", train_audio_emb, name="train", visual_features=True, )
 if config.eval_on_test:
     train_dataset = ConcatDataset([train_dataset, val_dataset])
-test_dataset = MELDDataset("../MELD.Raw/test_sent_emo.csv", "../MELD.Raw/output_repeated_splits_test", test_audio_emb)
+test_dataset = MELDDataset("../MELD.Raw/test_sent_emo.csv", "../MELD.Raw/output_repeated_splits_test", test_audio_emb, name="test", visual_features=True)
 
 def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentiment, train_data_loader, val_data_loader):
-
     # dummpy value of 0as a lower bound for the accuracy
     best_emotion_accuracy_so_far = 0
     num_of_no_improvements = 0
@@ -35,7 +34,7 @@ def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentimen
         model = model.train()
         loss_acc = 0
         total_epoch_loss = 0
-        for i, (batch_input, batch_labels) in enumerate(train_data_loader):    
+        for i, (batch_input, batch_labels) in enumerate(train_data_loader):
             batch_loss = train_step(model, batch_input, batch_labels, loss_emotion, loss_sentiment, optimiser)
             loss_acc += batch_loss
             total_epoch_loss += batch_loss
@@ -79,7 +78,7 @@ def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentimen
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimiser.state_dict(),
             'loss': total_epoch_loss
-        },  "model_saves/" + model_name + "_epoch" + str(epoch) +".pt")
+        },  "model_saves/" + model_name + "_epoch_image_only_" + str(epoch) +".pt")
         #    num_of_no_improvements = 0
         #    print("BEST VALIDATION UPDATED!")
         #else:
@@ -220,7 +219,7 @@ def test_step(model, input, target):
 dumb_model = DummyModel()
 emotion_criterion = nn.CrossEntropyLoss()
 sentiment_criterion = nn.CrossEntropyLoss()
-model_name = "DialogueGCN-Fixed"
+model_name = "Visual"
 #train_loader = DataLoader(train_dataset, batch_size=100, shuffle=True)
 #val_loader = DataLoader(val_dataset, batch_size=100, shuffle=True)
 #test_loader = DataLoader(test_dataset, batch_size=100, shuffle=True)
@@ -231,11 +230,17 @@ train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=1, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=1, shuffle=True)
 
-if config.use_dummy:
-    model = DummyModel()
-else:
+if config.model_type == 'dialoguegcn':
     model = DialogueGCN(config)
-    model.to("cuda")
+    model = model.to("cuda")
+elif config.model_type == 'fan':
+    model = ExpressionDetector(config.fan_weights_path)
+    model = model.to("cuda")
+elif config.model_type == 'acn':
+    model = AttentionConvWrapper()
+    model = model.to("cuda")
+if config.model_type == 'dummy':
+    model = DummyModel()
 
 #model.load_state_dict(torch.load('model_saves/DialogueGCN_epoch12.pt')['model_state_dict'])
 #model.eval()
