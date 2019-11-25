@@ -153,7 +153,7 @@ class Utterance(object):
         """
         Loads the video into memory and converts the frames into a pyTorch tensor
         """
-        return ""#video_to_tensor(self.file_path)
+        return video_to_tensor(self.file_path)
 
     def load_audio(self):
         """

@@ -5,18 +5,18 @@ from models.dialogue_gcn_cell import GraphConvolution
 from torch.nn.parameter import Parameter
 from transformers import BertModel, BertTokenizer
 from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence, pad_packed_sequence, PackedSequence
-#from models.visual_features import FaceModule
+from models.visual_features import FaceModule
 
 
 class DialogueGCN(nn.Module):
 
     def __init__(self, config):
         super(DialogueGCN, self).__init__()
-        self.use_audio = False
+        self.use_meld_audio = config.use_meld_audio
         self.att_window_size = config.att_window_size
         self.utt_embed_size = config.utt_embed_size
         self.text_encoder = nn.GRU(config.text_in_dim, config.text_out_dim, bidirectional=True, batch_first=True)
-        if self.use_audio:
+        if self.use_meld_audio:
             self.context_encoder = nn.GRU(config.context_in_dim * 3, config.context_out_dim, bidirectional=True, batch_first=True)#        
         else:
             self.context_encoder = nn.GRU(config.context_in_dim * 2, config.context_out_dim, bidirectional=True, batch_first=True)#        
@@ -46,19 +46,19 @@ class DialogueGCN(nn.Module):
         for param in self.bert.parameters():
             param.requires_grad = False
 
-        #self.face_module = FaceModule()
+        self.face_module = FaceModule()
 
     def forward(self, x):
         transcripts, video, audio, speakers = x
         speakers.squeeze_(0)
         #print(self.pred_rel_l1.weight[300:350, 300:400])
         indept_embeds = self.embed_text(transcripts)
-        if self.use_audio:
+        if self.use_meld_audio:
             audio = torch.stack(audio, dim=1).float().to('cuda')
             audio = torch.relu(self.w_reduce(audio))        
             indept_embeds = torch.cat([indept_embeds, audio], dim=2)
         context_embeds = self.context_encoder(indept_embeds)[0].squeeze(0)
-        #face_embeds = self.face_module(video)
+        face_embeds = self.face_module(video)
         relation_matrices = self.construct_edges_relations(context_embeds, speakers)
         pred_adj, suc_adj, same_speak_adj, diff_adj_matrix, attn = relation_matrices
         #print(context_embeds[:, 300:330])                                        
@@ -130,7 +130,7 @@ class DialogueGCN(nn.Module):
                 attn[i, j] = curr_utt.dot(ut_embs[j])
         # TODO: Problematic: zero elements pull nonzero attention weights
         attn = torch.softmax(attn, dim=1)
-        relation_matrices = self.build_relation_matrices(ut_embs, speaker_ids, attn)
+        relation_matrices = self.build_relation_matrices_2(ut_embs, speaker_ids, attn)
         return relation_matrices
     
     def build_relation_matrices(self, ut_embs, speaker_ids, attn_mask):
