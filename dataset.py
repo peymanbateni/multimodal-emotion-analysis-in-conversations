@@ -141,7 +141,7 @@ class Utterance(object):
     """
     Class for representing a single utterance in all 3 modalities
     """
-    def __init__(self, dialogue_id, utterance_id, transcript, speaker, emotion, sentiment, file_path, utt_audio):
+    def __init__(self, dialogue_id, utterance_id, transcript, speaker, emotion, sentiment, file_path, utt_audio, name):
         self.dialogue_id = dialogue_id
         self.utterance_id = utterance_id
         self.transcript = transcript
@@ -150,6 +150,7 @@ class Utterance(object):
         self.sentiment = sentiment
         self.file_path = file_path
         self.utt_audio = utt_audio
+        self.name = name
 
     def get_transcript(self):
         """
@@ -182,7 +183,7 @@ class Utterance(object):
 
         cache_path = './cache'
         setting_path = os.path.join(cache_path, 'persons_{}_rate_{}_size_{}'.format(max_persons, sampling_rate, output_size))
-        file_path = os.path.join(setting_path, 'dia_{}_utt_{}.pth'.format(self.dialogue_id, self.utterance_id))
+        file_path = os.path.join(setting_path, self.name + '_dia_{}_utt_{}.pth'.format(self.dialogue_id, self.utterance_id))
         if not os.path.exists(cache_path):
             os.mkdir(cache_path)
         if not os.path.exists(setting_path):
@@ -234,9 +235,10 @@ class MELDDataset(Dataset):
     load_sample_video(index): loads the video tensor retrieved from index
     """
 
-    def __init__(self, csv_file, root_dir, audio_embs, visual_features=False):
+    def __init__(self, csv_file, root_dir, audio_embs, name, visual_features=False):
         self.csv_records = pd.read_csv(csv_file)
         self.root_dir = os.path.abspath(root_dir)
+        self.name = name
 
         speaker_set = set(self.csv_records.loc[:, "Speaker"].values.tolist())
         emotion_set = set(self.csv_records.loc[:, "Emotion"].values.tolist())
@@ -278,7 +280,8 @@ class MELDDataset(Dataset):
                 self.emotion_mapping[emotion],
                 self.sentiment_mapping[sentiment],
                 file_path,
-                utt_audio_embed
+                utt_audio_embed,
+                self.name
             )
             dialogues[d_id].append(utterance)
 
