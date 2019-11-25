@@ -71,8 +71,8 @@ class ExpressionDetector(torch.nn.Module):
 
         
         # placeholder:
+        sentiment_output = torch.zeros(len(emotion_output), 3).cuda()
         emotion_output = torch.cat(emotion_output, dim=0)
-        sentiment_output = torch.zeros(len(faces), 3).cuda()
         print("EMOTION", emotion_output.size())
         print("SENTIMENT", sentiment_output.size())
         return emotion_output, sentiment_output
