@@ -11,6 +11,7 @@ import torch.utils.data
 import numpy as np
 from models import frame_attention_network
 from models import visual_features
+from models import attention_convolution_network
 
 def load_parameter(_structure, _parameterDir):
 
@@ -69,10 +70,36 @@ class ExpressionDetector(torch.nn.Module):
 
         print(len(emotion_output))
 
-        
         # placeholder:
         sentiment_output = torch.zeros(len(emotion_output), 3).cuda()
         emotion_output = torch.cat(emotion_output, dim=0)
         print("EMOTION", emotion_output.size())
         print("SENTIMENT", sentiment_output.size())
         return emotion_output, sentiment_output
+
+class AttentionConvWrapper(torch.nn.Module):
+
+    def __init__(self):
+        super(AttentionConvWrapper, self).__init__()
+        self.model = attention_convolution_network.AttentionConvolutionNetwork()
+
+    def forward(self, x):
+        transcript, face_vector, audio, speakers = x
+
+        #print(face_vector[0].shape)
+
+        emotion_output = []
+        sentiment_output = []
+        for faces in face_vector:
+            _, N, F, C, W, H = faces.shape
+
+            face_stack = faces.squeeze(0).view(N * F, C, W, H).to("cuda")
+            emotions, sentiments = self.model(face_stack)
+
+            # TODO: placeholder aggregation method 
+            emotion_output.append(torch.max(emotions, dim=0).values.unsqueeze(0))
+            sentiment_output.append(torch.max(sentiments, dim=0).values.unsqueeze(0))
+
+            #print(emotions)
+        #print(emotion_output[0].shape)
+        return torch.cat(emotion_output), torch.cat(sentiment_output)

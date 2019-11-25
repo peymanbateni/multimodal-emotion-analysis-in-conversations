@@ -57,9 +57,21 @@ def detect_faces_mtcnn(video_tensor, max_persons=7, output_size=160, sampling_ra
 
     NB: output tensor is normalized
     """
+
     # Istantiate mtcnn detector
     mtcnn = MTCNN(image_size=output_size, margin=0, keep_all=True)
 
+<<<<<<< HEAD
+    #print(len(video_tensor))
+    #print(video_tensor[0].shape)
+    #TODO: fix me! for some reason the incoming input is of type 
+    # list(tensor(1,?,W,H,C)) when the input should be tensor(N,W,H,C)
+
+    #Hack to make it run but needs to be fixed as is not using all elements in the list 
+    video_tensor = video_tensor[0][0]
+
+=======
+>>>>>>> 2288261894ec567171161039210f0b63e2f473ba
     # Compiling sampling and pass into MTCNN, currently this is quite wasteful
     # as we are converting to numpy array then to PIL image then it gets converted
     # back to torch tensor within the method, TODO: optimize data flow to
