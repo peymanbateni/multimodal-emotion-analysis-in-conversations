@@ -13,13 +13,11 @@ class DialogueGCN(nn.Module):
     def __init__(self, config):
         super(DialogueGCN, self).__init__()
         self.config = config
-        self.use_our_audio = config.use_our_audio
-        self.use_meld_audio = config.use_meld_audio
         self.att_window_size = config.att_window_size
         self.utt_embed_size = config.utt_embed_size
         self.text_encoder = nn.GRU(config.text_in_dim, config.text_out_dim, bidirectional=True, batch_first=True)
-        if self.use_meld_audio or self.use_our_audio:
-            if self.config.use_texts:
+        if self.config.use_meld_audio or self.config.use_our_audio:
+            if self.config.config.use_texts:
                 self.context_encoder = nn.GRU(config.context_in_dim * 3, config.context_out_dim, bidirectional=True, batch_first=True)
             else:
                 self.context_encoder = nn.GRU(config.context_in_dim * 1, config.context_out_dim, bidirectional=True, batch_first=True)
@@ -64,16 +62,16 @@ class DialogueGCN(nn.Module):
         #print(self.pred_rel_l1.weight[300:350, 300:400])
         if self.config.use_texts:
             indept_embeds = self.embed_text(transcripts)
-        if self.use_meld_audio:
+        if self.config.use_meld_audio:
             audio = torch.stack(audio, dim=1).float().to('cuda')
             audio = torch.relu(self.audio_W(audio))      
             if self.config.use_texts:
                 indept_embeds = torch.cat([indept_embeds, audio], dim=2)
             else:
                 indept_embeds = audio            
-        elif self.use_our_audio:
+        elif self.config.use_our_audio:
             audio = self.embed_audio(audio)
-            if self.config.use_texts:
+            if self.config.config.use_texts:
                 indept_embeds = torch.cat([indept_embeds, audio], dim=2)
             else:
                 indept_embeds = audio
