@@ -259,7 +259,6 @@ class MELDDataset(Dataset):
         #print([self.speakers_to_label[key] for key in self.csv_records.loc[:, "Speaker"].values.tolist()])
 
 #        print(self.csv_records.iloc[0:10,:])
-
         dialogues = {}
         for record in self.csv_records.loc[:].values:
 #            print(record)
@@ -271,7 +270,10 @@ class MELDDataset(Dataset):
             file_path = "dia{}_utt{}.mp4".format(d_id, u_id)
             file_path = os.path.join(self.root_dir, file_path)
             utt_audio_embed_id = str(d_id) + "_" + str(u_id)
-            utt_audio_embed = audio_embs[utt_audio_embed_id]
+            try:
+                utt_audio_embed = audio_embs[utt_audio_embed_id]
+            except KeyError:
+                utt_audio_embed = (torch.zeros(128, 1).to('cuda'), torch.zeros(20, 1).to('cuda'))
             utterance = Utterance(
                 d_id,
                 u_id,
