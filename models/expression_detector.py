@@ -93,7 +93,8 @@ class AttentionConvWrapper(torch.nn.Module):
         for faces in face_vector:
             _, N, F, C, W, H = faces.shape
 
-            face_stack = faces.squeeze(0).view(N * F, C, W, H).to("cuda")
+            face_stack = faces.squeeze(0).view(N * F, C, W, H)
+            #print(face_stack.shape)
             emotions, sentiments = self.model(face_stack)
 
             # TODO: placeholder aggregation method 
@@ -101,5 +102,5 @@ class AttentionConvWrapper(torch.nn.Module):
             sentiment_output.append(torch.max(sentiments, dim=0).values.unsqueeze(0))
 
             #print(emotions)
-        #print(emotion_output[0].shape)
+        #print(emotion_output[0].shape) 
         return torch.cat(emotion_output), torch.cat(sentiment_output)

@@ -58,6 +58,8 @@ class AttentionConvolutionNetwork(nn.Module):
 
     def forward(self, x):
         #print(x.shape)
+        if x.shape[0] == 0:
+            return torch.zeros(0, 7, dtype=float).to("cuda"), torch.zeros(0, 3, dtype=float).to("cuda")
         loc = self.localization(x)
         loc = loc.view(-1, 90)
         #print(loc.shape)

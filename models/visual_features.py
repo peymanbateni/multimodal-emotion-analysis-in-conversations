@@ -76,6 +76,7 @@ def detect_faces_mtcnn(video_tensor, max_persons=7, output_size=160, sampling_ra
 
     # TODO: for some reason the following call errors out sometimes, might be a bug in the
     # library implementation in which case we might need to clone the repo and modify it ourselves
+    #images = mtcnn(video_tensor[::sampling_rate])
     images = mtcnn(video)
     #print(len(images))
     #print(images[0].shape)
