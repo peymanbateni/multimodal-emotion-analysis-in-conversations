@@ -181,7 +181,7 @@ class Utterance(object):
 
     def get_cached_visual_features(self, max_persons=7, output_size=224, sampling_rate=30, display_images=False):
 
-        cache_path = './cache'
+        cache_path = '../multimodal_conversational_analysis-old/cache'
         setting_path = os.path.join(cache_path, 'persons_{}_rate_{}_size_{}'.format(max_persons, sampling_rate, output_size))
         file_path = os.path.join(setting_path, self.name + '_dia_{}_utt_{}.pth'.format(self.dialogue_id, self.utterance_id))
         if not os.path.exists(cache_path):

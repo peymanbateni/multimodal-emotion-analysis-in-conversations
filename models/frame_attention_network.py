@@ -192,8 +192,9 @@ class ResNet_AT(nn.Module):
                 output = cascadeVs_stack.mul(betas_stack * alphas_stack).sum(2).div((betas_stack * alphas_stack).sum(2))
 
             if self.at_type == 'self-attention':
-                vm1 = self.dropout(vm1)
-                pred_score = self.pred_fc1(vm1)
+                #vm1 = self.dropout(vm1)
+                #pred_score = self.pred_fc1(vm1)
+                return vm1
 
             if self.at_type == 'relation-attention':
                 output = self.dropout2(output)
@@ -240,10 +241,10 @@ class ResNet_AT(nn.Module):
                 return pred_score
 
             if AT_level == 'pred':
-                if self.at_type == 'self-attention':
-                    pred_score = self.pred_fc1(self.dropout(vm))
-
-                return pred_score
+                #if self.at_type == 'self-attention':
+                    #pred_score = self.pred_fc1(self.dropout(vm))
+                return vm
+                #return pred_score
 
 ''' self-attention; relation-attention '''
 def resnet18_AT(pretrained=False, **kwargs):

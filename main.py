@@ -37,10 +37,9 @@ def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentimen
             batch_loss = train_step(model, batch_input, batch_labels, loss_emotion, loss_sentiment, optimiser)
             loss_acc += batch_loss
             total_epoch_loss += batch_loss
-            if (i % 100 == 0):
+            if (i % 50 == 0):
                 print("Epoch[" + str(epoch) + "/" + str(config.num_epochs) +"] - batch " + str(i) + " Error: " + str(loss_acc))
                 #loss_acc = 0
-            break
 
         model = model.eval()
         emotion_predicted_labels = []
@@ -102,9 +101,9 @@ def get_weighted_F1(emotion_f1s, sentiment_f1s, targets):
     return emotion_weighted_f1, sentiment_weighted_f1
 
 def get_accuracy(predicted_emotion, predicted_sentiment, target):
-    print(target.size())
-    print(predicted_emotion.size())
-    print(predicted_sentiment.size())
+    #print(target.size())
+    #print(predicted_emotion.size())
+    #print(predicted_sentiment.size())
     emotion_accuracy_acc = torch.eq(predicted_emotion, target[:,0]).sum().item() / target.size(0)
     sentiment_accuracy_acc = torch.eq(predicted_sentiment, target[:,1]).sum().item() / target.size(0)
     return emotion_accuracy_acc, sentiment_accuracy_acc

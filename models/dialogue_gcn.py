@@ -6,20 +6,27 @@ from torch.nn.parameter import Parameter
 from transformers import BertModel, BertTokenizer
 from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence, pad_packed_sequence, PackedSequence
 from models.visual_features import FaceModule
-
+from models.visual_model import ExpressionDetector
 
 class DialogueGCN(nn.Module):
 
     def __init__(self, config):
         super(DialogueGCN, self).__init__()
         self.use_meld_audio = config.use_meld_audio
+        self.use_visual = config.use_visual
         self.att_window_size = config.att_window_size
         self.utt_embed_size = config.utt_embed_size
         self.text_encoder = nn.GRU(config.text_in_dim, config.text_out_dim, bidirectional=True, batch_first=True)
         if self.use_meld_audio:
-            self.context_encoder = nn.GRU(config.context_in_dim * 3, config.context_out_dim, bidirectional=True, batch_first=True)#        
+            if self.use_visual:
+                self.context_encoder = nn.GRU(config.context_in_dim * 4, config.context_out_dim, bidirectional=True, batch_first=True)#
+            else:
+                self.context_encoder = nn.GRU(config.context_in_dim * 3, config.context_out_dim, bidirectional=True, batch_first=True)#        
         else:
-            self.context_encoder = nn.GRU(config.context_in_dim * 2, config.context_out_dim, bidirectional=True, batch_first=True)#        
+            if self.use_visual:
+                self.context_encoder = nn.GRU(config.context_in_dim * 3, config.context_out_dim, bidirectional=True, batch_first=True)#
+            else:
+                self.context_encoder = nn.GRU(config.context_in_dim * 2, config.context_out_dim, bidirectional=True, batch_first=True)#        
         self.audio_W = nn.Linear(config.audio_in_dim, config.audio_out_dim, bias=True)
 #        self.vis_W = nn.Linear(config.vis_in_dim, config.vis_out_dim, bias=True)
         self.pred_rel_l1 = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
@@ -46,7 +53,7 @@ class DialogueGCN(nn.Module):
         for param in self.bert.parameters():
             param.requires_grad = False
 
-        self.face_module = FaceModule()
+        self.visual_module = ExpressionDetector(config.fan_weights_path)
 
     def forward(self, x):
         transcripts, video, audio, speakers = x
@@ -57,8 +64,11 @@ class DialogueGCN(nn.Module):
             audio = torch.stack(audio, dim=1).float().to('cuda')
             audio = torch.relu(self.w_reduce(audio))        
             indept_embeds = torch.cat([indept_embeds, audio], dim=2)
+        if self.use_visual:
+            visual_embeds, _ = self.visual_module(video)
+            indept_embeds = torch.cat([indept_embeds, visual_embeds.unsqueeze(0)], dim=2)
         context_embeds = self.context_encoder(indept_embeds)[0].squeeze(0)
-        face_embeds = self.face_module(video)
+        #face_embeds = self.face_module(video)
         relation_matrices = self.construct_edges_relations(context_embeds, speakers)
         pred_adj, suc_adj, same_speak_adj, diff_adj_matrix, attn = relation_matrices
         #print(context_embeds[:, 300:330])                                        

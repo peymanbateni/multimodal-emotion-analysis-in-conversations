@@ -19,4 +19,5 @@ class Config:
         self.num_epochs = 1
         self.use_meld_audio=False
         self.use_our_audio=False
+        self.use_visual=False
 
