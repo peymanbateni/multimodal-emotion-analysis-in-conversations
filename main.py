@@ -7,49 +7,28 @@ from dummy_model import DummyModel
 from torch.utils.data import DataLoader
 from models.config import Config
 from models.dialogue_gcn import DialogueGCN
+
+from torch.utils.data import ConcatDataset
+from sklearn.metrics import f1_score, confusion_matrix
 from models.expression_detector import ExpressionDetector, AttentionConvWrapper
-from sklearn.metrics import f1_score
 
 #audio_embed_path = "../MELD.Features.Models/features/audio_embeddings_feature_selection_emotion.pkl"
 audio_embed_path = "../MELD.Raw/audio_embeddings_feature_selection_sentiment.pkl"
 
 train_audio_emb, val_audio_emb, test_audio_emb = pickle.load(open(audio_embed_path, 'rb'))
-#print(train_audio_emb.keys())
-#x = int("hey")
+config = Config()
 
-#dataset = MELDDataset("../MELD.Raw/dev_sent_emo.csv", "../MELD.Raw/dev_splits_complete/", val_audio_emb)
-#print(len(dataset))
-#utterance = dataset[0]
-
-#(transcripts, video, audio), (emotion_labels, sentiment_labels) = dataset[0:3]
-
-# Transcripts
-#print(transcripts)
-# Video
-#print(video[0].shape)
-# Audio
-#print(audio[0][1].shape)
-
-# labels
-#print(emotion_labels)
-#print(sentiment_labels)
-#utterance = Utterance("", 1, 1, 1, "../MELD.Raw/dev_splits_complete/dia0_utt0.mp4")
-#print(utterance.load_audio()[1].shape)
-#print(utterance.load_video().shape)
-
-val_dataset = MELDDataset("../MELD.Raw/dev_sent_emo.csv", "../MELD.Raw/dev_splits_complete/", val_audio_emb, name="val", visual_features=True,)
+val_dataset = MELDDataset("../MELD.Raw/dev_sent_emo.csv", "../MELD.Raw/dev_splits_complete/", val_audio_emb, name="val", visual_features=True)
 train_dataset = MELDDataset("../MELD.Raw/train_sent_emo.csv", "../MELD.Raw/train_splits/", train_audio_emb, name="train", visual_features=True, )
+if config.eval_on_test:
+    train_dataset = ConcatDataset([train_dataset, val_dataset])
 test_dataset = MELDDataset("../MELD.Raw/test_sent_emo.csv", "../MELD.Raw/output_repeated_splits_test", test_audio_emb, name="test", visual_features=True)
-#utterance = Utterance("", 1, 1, 1, "../MELD.Raw/dev_splits_complete/dia0_utt0.mp4", None)
-#print(utterance.load_video().shape)
-#dataset_loader.load_image("../MELD.Raw/image.png")
 
-def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentiment, train_data_loader, val_data_loader, epochs=1):
-
+def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentiment, train_data_loader, val_data_loader):
     # dummpy value of 0as a lower bound for the accuracy
     best_emotion_accuracy_so_far = 0
     num_of_no_improvements = 0
-    for epoch in range(epochs):
+    for epoch in range(config.num_epochs):
 
         model = model.train()
         loss_acc = 0
@@ -59,8 +38,9 @@ def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentimen
             loss_acc += batch_loss
             total_epoch_loss += batch_loss
             if (i % 100 == 0):
-                print("Epoch[" + str(epoch) + "/" + str(epochs) +"] - batch " + str(i) + " Error: " + str(loss_acc))
+                print("Epoch[" + str(epoch) + "/" + str(config.num_epochs) +"] - batch " + str(i) + " Error: " + str(loss_acc))
                 #loss_acc = 0
+            break
 
         model = model.eval()
         emotion_predicted_labels = []
@@ -87,10 +67,10 @@ def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentimen
         #emotion_precisions, sentiment_precisions = get_precision_for_each_class(emotion_predicted_labels, sentiment_predicted_labels, target_labels)
         #emotion_f1s, sentiment_f1s = get_f1_score_for_each_class(emotion_precisions, emotion_recalls, sentiment_precisions, sentiment_recalls)
         #emotion_weighted_f1, sentiment_weighted_f1 = get_weighted_F1(emotion_f1s, sentiment_f1s, target_labels)
-
+        confusion = confusion_matrix(emotion_target_labels.cpu().numpy(), emotion_predicted_labels.cpu().numpy())
         print("Validation Accuracy (Emotion): ", emotion_accuracy)
         print("F1 Weighted", emotion_f1_score)
-
+        print("Confusion matrix", confusion)
         #if ((emotion_correct_count / val_count) > best_emotion_accuracy_so_far):
         #    best_emotion_accuracy_so_far = (emotion_correct_count / val_count)
         torch.save({
@@ -122,6 +102,9 @@ def get_weighted_F1(emotion_f1s, sentiment_f1s, targets):
     return emotion_weighted_f1, sentiment_weighted_f1
 
 def get_accuracy(predicted_emotion, predicted_sentiment, target):
+    print(target.size())
+    print(predicted_emotion.size())
+    print(predicted_sentiment.size())
     emotion_accuracy_acc = torch.eq(predicted_emotion, target[:,0]).sum().item() / target.size(0)
     sentiment_accuracy_acc = torch.eq(predicted_sentiment, target[:,1]).sum().item() / target.size(0)
     return emotion_accuracy_acc, sentiment_accuracy_acc
@@ -192,7 +175,7 @@ def test_model(model_name, model, test_loader):
     target_labels = torch.cat([emotion_target_labels.unsqueeze(1), sentiment_target_labels.unsqueeze(1)], 1).cuda()
 
     emotion_f1_score = f1_score(emotion_target_labels.cpu().numpy(), emotion_predicted_labels.cpu().numpy(), average='weighted')        
-
+    confusion = confusion_matrix(emotion_target_labels.cpu().numpy(), emotion_predicted_labels.cpu().numpy())
     emotion_accuracy, sentiment_accuracy = get_accuracy(emotion_predicted_labels, sentiment_predicted_labels, target_labels)
     #emotion_recalls, sentiment_recalls = get_recall_for_each_class(emotion_predicted_labels, sentiment_predicted_labels, target_labels)
     #emotion_precisions, sentiment_precisions = get_precision_for_each_class(emotion_predicted_labels, sentiment_predicted_labels, target_labels)
@@ -201,7 +184,8 @@ def test_model(model_name, model, test_loader):
 
     print("Validation Accuracy (Emotion): ", emotion_accuracy)
     print("F1 Weighted", emotion_f1_score)
-
+    print("Confusion matrix", confusion)
+    
 def train_step(model, input, target, loss_emotion, loss_sentiment, optimiser):
     """Trains model for one batch of data."""
     optimiser.zero_grad()
@@ -236,7 +220,6 @@ def test_step(model, input, target):
     return output_labels_emotion, output_labels_sentiment, target[0].size()
 
 dumb_model = DummyModel()
-config = Config()
 emotion_criterion = nn.CrossEntropyLoss()
 sentiment_criterion = nn.CrossEntropyLoss()
 model_name = "Visual"
@@ -266,8 +249,8 @@ if config.model_type == 'dummy':
 #model.eval()
 #test_model('gcn_13', model, test_loader)
 #return
-optimisation_unit = optim.Adam(model.parameters(), lr=0.0005, weight_decay=0.00001)
+optimisation_unit = optim.Adam(model.parameters(), lr=config.lr, weight_decay=config.l2)
 
-for i in range(1):
+for i in range(20):
     train_and_validate(model_name + str(i), model, optimisation_unit, emotion_criterion, sentiment_criterion, train_loader, val_loader)
     test_model(model_name + str(i), model, test_loader)

@@ -288,7 +288,7 @@ class MELDDataset(Dataset):
         self.data = []
         for d_id, utterances in dialogues.items():
             # Assumes no gaps in dialogue id
-            # Assumes no gaps in utterance ids
+            # Assumes no gaps in utterance ids            
             utteraences = utterances.sort(key=lambda x: x.utterance_id)
             self.data.append(Dialogue(d_id, utterances, visual_features=visual_features))
 

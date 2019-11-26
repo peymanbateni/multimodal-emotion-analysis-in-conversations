@@ -1,0 +1,646 @@
+/scratch/grigorii/tools/anaconda3/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:516: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_qint8 = np.dtype([("qint8", np.int8, 1)])
+/scratch/grigorii/tools/anaconda3/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:517: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_quint8 = np.dtype([("quint8", np.uint8, 1)])
+/scratch/grigorii/tools/anaconda3/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:518: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_qint16 = np.dtype([("qint16", np.int16, 1)])
+/scratch/grigorii/tools/anaconda3/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:519: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_quint16 = np.dtype([("quint16", np.uint16, 1)])
+/scratch/grigorii/tools/anaconda3/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:520: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_qint32 = np.dtype([("qint32", np.int32, 1)])
+/scratch/grigorii/tools/anaconda3/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:525: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  np_resource = np.dtype([("resource", np.ubyte, 1)])
+/scratch/grigorii/tools/anaconda3/lib/python3.7/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:541: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_qint8 = np.dtype([("qint8", np.int8, 1)])
+/scratch/grigorii/tools/anaconda3/lib/python3.7/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:542: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_quint8 = np.dtype([("quint8", np.uint8, 1)])
+/scratch/grigorii/tools/anaconda3/lib/python3.7/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:543: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_qint16 = np.dtype([("qint16", np.int16, 1)])
+/scratch/grigorii/tools/anaconda3/lib/python3.7/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:544: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_quint16 = np.dtype([("quint16", np.uint16, 1)])
+/scratch/grigorii/tools/anaconda3/lib/python3.7/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:545: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_qint32 = np.dtype([("qint32", np.int32, 1)])
+/scratch/grigorii/tools/anaconda3/lib/python3.7/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:550: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  np_resource = np.dtype([("resource", np.ubyte, 1)])
+Epoch[0/1] - batch 0 Error: 1.9366552829742432
+Epoch[0/1] - batch 100 Error: 158.93437260389328
+Epoch[0/1] - batch 200 Error: 313.56080693006516
+Epoch[0/1] - batch 300 Error: 454.2178813815117
+Epoch[0/1] - batch 400 Error: 594.9487184286118
+Epoch[0/1] - batch 500 Error: 738.7856692373753
+Epoch[0/1] - batch 600 Error: 876.59363758564
+Epoch[0/1] - batch 700 Error: 1014.6498693525791
+Epoch[0/1] - batch 800 Error: 1148.7138042896986
+Epoch[0/1] - batch 900 Error: 1298.1561626642942
+Epoch[0/1] - batch 1000 Error: 1440.866022720933
+Epoch[0/1] - batch 1100 Error: 1572.993684783578
+/scratch/grigorii/tools/anaconda3/lib/python3.7/site-packages/sklearn/metrics/classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 in labels with no predicted samples.
+  'precision', 'predicted', average, warn_for)
+Validation Accuracy (Emotion):  0.4878268710550045
+F1 Weighted 0.36154308659013096
+Confusion matrix [[ 98   0   0  65   0   0   0]
+ [ 81   0   0  72   0   0   0]
+ [ 23   0   0  17   0   0   0]
+ [ 27   0   0 443   0   0   0]
+ [  7   0   0  15   0   0   0]
+ [ 90   0   0  60   0   0   0]
+ [ 23   0   0  88   0   0   0]]
+Testing DialogueGCN-Fixed0
+Validation Accuracy (Emotion):  0.5455938697318008
+F1 Weighted 0.43237018643456054
+Confusion matrix [[ 247    0    0  155    0    0    0]
+ [ 212    0    0  133    0    0    0]
+ [  21    0    0   29    0    0    0]
+ [  79    0    0 1177    0    0    0]
+ [  27    0    0   41    0    0    0]
+ [ 161    0    0  120    0    0    0]
+ [  47    0    0  161    0    0    0]]
+Epoch[0/1] - batch 0 Error: 0.13172006607055664
+Epoch[0/1] - batch 100 Error: 135.0552315413952
+Epoch[0/1] - batch 200 Error: 270.5063381046057
+Epoch[0/1] - batch 300 Error: 420.04056404531
+Epoch[0/1] - batch 400 Error: 553.0826319307089
+Epoch[0/1] - batch 500 Error: 689.9256788045168
+Epoch[0/1] - batch 600 Error: 828.4775682240725
+Epoch[0/1] - batch 700 Error: 952.3370113819838
+Epoch[0/1] - batch 800 Error: 1082.654177248478
+Epoch[0/1] - batch 900 Error: 1200.6933869570494
+Epoch[0/1] - batch 1000 Error: 1321.9976890534163
+Epoch[0/1] - batch 1100 Error: 1448.4993970245123
+Validation Accuracy (Emotion):  0.5482416591523895
+F1 Weighted 0.47676307829967224
+Confusion matrix [[ 88  11   0  56   0   8   0]
+ [ 47  25   0  68   0  13   0]
+ [ 10  10   0  15   0   5   0]
+ [ 16   4   0 425   0  25   0]
+ [  1   1   0  15   0   5   0]
+ [ 31   9   0  41   0  69   0]
+ [ 17   7   0  82   0   4   1]]
+Testing DialogueGCN-Fixed1
+Validation Accuracy (Emotion):  0.5812260536398467
+F1 Weighted 0.5220837928877847
+Confusion matrix [[ 211   22    0  135    0   34    0]
+ [ 105   70    0  121    0   47    2]
+ [   9    8    0   29    0    4    0]
+ [  71   19    0 1117    0   49    0]
+ [  10   10    0   38    0   10    0]
+ [  62   16    0   85    0  118    0]
+ [  29   13    0  152    0   13    1]]
+Epoch[0/1] - batch 0 Error: 1.8233922719955444
+Epoch[0/1] - batch 100 Error: 125.92470148205757
+Epoch[0/1] - batch 200 Error: 247.42808577418327
+Epoch[0/1] - batch 300 Error: 368.9429101347923
+Epoch[0/1] - batch 400 Error: 501.6301207989454
+Epoch[0/1] - batch 500 Error: 629.2672254145145
+Epoch[0/1] - batch 600 Error: 746.0655132234097
+Epoch[0/1] - batch 700 Error: 872.2195885181427
+Epoch[0/1] - batch 800 Error: 1005.3775919079781
+Epoch[0/1] - batch 900 Error: 1136.4965093582869
+Epoch[0/1] - batch 1000 Error: 1263.5521105229855
+Epoch[0/1] - batch 1100 Error: 1384.3575500696898
+Validation Accuracy (Emotion):  0.5590622182146078
+F1 Weighted 0.49712209321966094
+Confusion matrix [[ 85  10   0  59   0   8   1]
+ [ 39  37   0  64   0   9   4]
+ [  9  10   0  14   0   6   1]
+ [ 10   5   0 431   0  23   1]
+ [  1   2   0  16   0   3   0]
+ [ 27  14   0  47   0  60   2]
+ [ 13   9   0  79   0   3   7]]
+Testing DialogueGCN-Fixed2
+Validation Accuracy (Emotion):  0.5950191570881226
+F1 Weighted 0.5458506765425296
+Confusion matrix [[ 195   25    0  143    0   37    2]
+ [  84   98    0  119    0   37    7]
+ [   7    9    0   28    0    3    3]
+ [  57   23    0 1127    0   35   14]
+ [   7   13    0   37    0    7    4]
+ [  52   21    0   90    0  118    0]
+ [  23   15    0  141    0   14   15]]
+Epoch[0/1] - batch 0 Error: 2.293424129486084
+Epoch[0/1] - batch 100 Error: 118.62124852836132
+Epoch[0/1] - batch 200 Error: 245.3321277052164
+Epoch[0/1] - batch 300 Error: 364.3017672598362
+Epoch[0/1] - batch 400 Error: 494.43543270230293
+Epoch[0/1] - batch 500 Error: 623.9984510838985
+Epoch[0/1] - batch 600 Error: 737.0597911477089
+Epoch[0/1] - batch 700 Error: 848.3307783007622
+Epoch[0/1] - batch 800 Error: 978.6694496273994
+Epoch[0/1] - batch 900 Error: 1083.3057516501285
+Epoch[0/1] - batch 1000 Error: 1205.0415844009258
+Epoch[0/1] - batch 1100 Error: 1323.211274533067
+Validation Accuracy (Emotion):  0.5653742110009017
+F1 Weighted 0.4891144240116296
+Confusion matrix [[ 97   0   0  62   0   4   0]
+ [ 51  23   0  66   0  11   2]
+ [  9   7   0  18   0   6   0]
+ [ 19   0   0 438   0  13   0]
+ [  2   0   0  15   0   5   0]
+ [ 35   1   0  46   0  67   1]
+ [ 16   5   0  84   0   4   2]]
+Testing DialogueGCN-Fixed3
+Validation Accuracy (Emotion):  0.593103448275862
+F1 Weighted 0.5267082104700029
+Confusion matrix [[ 224    5    0  151    0   22    0]
+ [ 135   49    0  124    0   36    1]
+ [  13    3    0   31    0    3    0]
+ [  70    8    0 1158    0   18    2]
+ [  13    8    0   37    0    9    1]
+ [  66    6    0  100    0  109    0]
+ [  34    5    0  151    0   10    8]]
+Epoch[0/1] - batch 0 Error: 1.1872813701629639
+Epoch[0/1] - batch 100 Error: 115.55088432133198
+Epoch[0/1] - batch 200 Error: 229.60211345553398
+Epoch[0/1] - batch 300 Error: 351.85874149762094
+Epoch[0/1] - batch 400 Error: 472.7158160265535
+Epoch[0/1] - batch 500 Error: 584.4210550896823
+Epoch[0/1] - batch 600 Error: 698.6402929387987
+Epoch[0/1] - batch 700 Error: 828.4762948416173
+Epoch[0/1] - batch 800 Error: 946.3267637453973
+Epoch[0/1] - batch 900 Error: 1073.5094415061176
+Epoch[0/1] - batch 1000 Error: 1195.579180907458
+Epoch[0/1] - batch 1100 Error: 1309.2884598188102
+Validation Accuracy (Emotion):  0.5915238954012624
+F1 Weighted 0.5434683279708277
+Confusion matrix [[ 89  16   0  46   0   6   6]
+ [ 25  52   0  63   0   7   6]
+ [  7  13   0  13   0   5   2]
+ [ 16   5   0 430   0  17   2]
+ [  1   2   0  15   0   3   1]
+ [ 24  16   0  41   0  68   1]
+ [ 12  10   0  68   0   4  17]]
+Testing DialogueGCN-Fixed4
+Validation Accuracy (Emotion):  0.6088122605363985
+F1 Weighted 0.5642687159454752
+Confusion matrix [[ 224   28    0  122    0   23    5]
+ [  75  114    0  120    0   34    2]
+ [   6   10    0   28    0    4    2]
+ [  69   24    0 1117    0   26   20]
+ [   5   15    0   36    0    9    3]
+ [  53   25    0   86    0  114    3]
+ [  19   24    0  134    0   11   20]]
+Epoch[0/1] - batch 0 Error: 0.9784989356994629
+Epoch[0/1] - batch 100 Error: 109.37838280200958
+Epoch[0/1] - batch 200 Error: 231.62964135408401
+Epoch[0/1] - batch 300 Error: 346.84631561487913
+Epoch[0/1] - batch 400 Error: 469.9283674247563
+Epoch[0/1] - batch 500 Error: 587.2858447805047
+Epoch[0/1] - batch 600 Error: 706.4570104852319
+Epoch[0/1] - batch 700 Error: 824.4552548602223
+Epoch[0/1] - batch 800 Error: 932.1468179263175
+Epoch[0/1] - batch 900 Error: 1040.464571127668
+Epoch[0/1] - batch 1000 Error: 1159.7231710739434
+Epoch[0/1] - batch 1100 Error: 1278.0711572356522
+Validation Accuracy (Emotion):  0.587917042380523
+F1 Weighted 0.5521303968498056
+Confusion matrix [[ 84  24   0  40   0  12   3]
+ [ 20  70   0  48   0   8   7]
+ [  3  15   0  12   0   7   3]
+ [ 14  15   0 409   0  24   8]
+ [  1   6   0  10   0   3   2]
+ [ 16  31   0  32   0  68   3]
+ [ 14  14   0  53   0   9  21]]
+Testing DialogueGCN-Fixed5
+Validation Accuracy (Emotion):  0.6042145593869732
+F1 Weighted 0.575219383646985
+Confusion matrix [[ 206   44    0  113    0   33    6]
+ [  49  169    0   93    0   26    8]
+ [   5   15    0   20    0    3    7]
+ [  66   51    0 1053    0   42   44]
+ [   5   19    0   31    0    8    5]
+ [  37   54    0   69    0  118    3]
+ [  17   39    0  106    0   15   31]]
+Epoch[0/1] - batch 0 Error: 1.057028889656067
+Epoch[0/1] - batch 100 Error: 110.33713328838348
+Epoch[0/1] - batch 200 Error: 221.39649882167578
+Epoch[0/1] - batch 300 Error: 345.2354931011796
+Epoch[0/1] - batch 400 Error: 460.83803816791624
+Epoch[0/1] - batch 500 Error: 568.198926945217
+Epoch[0/1] - batch 600 Error: 681.1853733407333
+Epoch[0/1] - batch 700 Error: 797.2279630796984
+Epoch[0/1] - batch 800 Error: 899.485277463682
+Epoch[0/1] - batch 900 Error: 1006.4171735467389
+Epoch[0/1] - batch 1000 Error: 1113.3690043101087
+Epoch[0/1] - batch 1100 Error: 1239.7932836646214
+Validation Accuracy (Emotion):  0.5987376014427412
+F1 Weighted 0.5458376948814057
+Confusion matrix [[ 98   5   0  50   0  10   0]
+ [ 27  50   0  61   0  13   2]
+ [  9  10   0  13   0   6   2]
+ [ 12   3   0 424   0  31   0]
+ [  1   2   0  15   0   4   0]
+ [ 30   8   0  31   0  81   0]
+ [ 16   8   0  70   0   6  11]]
+Testing DialogueGCN-Fixed6
+Validation Accuracy (Emotion):  0.6080459770114942
+F1 Weighted 0.5593525664014393
+Confusion matrix [[ 232   18    0  124    0   25    3]
+ [  87   95    0  110    0   53    0]
+ [   9    8    0   26    0    6    1]
+ [  70   20    0 1104    0   58    4]
+ [   6   14    0   36    0   12    0]
+ [  58   15    0   62    0  146    0]
+ [  24   17    0  134    0   23   10]]
+Epoch[0/1] - batch 0 Error: 0.5655815005302429
+Epoch[0/1] - batch 100 Error: 107.05128775537014
+Epoch[0/1] - batch 200 Error: 210.4018470942974
+Epoch[0/1] - batch 300 Error: 321.5979279503226
+Epoch[0/1] - batch 400 Error: 434.2659160345793
+Epoch[0/1] - batch 500 Error: 555.672934345901
+Epoch[0/1] - batch 600 Error: 664.6080697998405
+Epoch[0/1] - batch 700 Error: 777.6658878959715
+Epoch[0/1] - batch 800 Error: 885.102981749922
+Epoch[0/1] - batch 900 Error: 1001.2482846342027
+Epoch[0/1] - batch 1000 Error: 1121.5971102006733
+Epoch[0/1] - batch 1100 Error: 1236.4964916072786
+Validation Accuracy (Emotion):  0.6005410279531109
+F1 Weighted 0.5848943993496675
+Confusion matrix [[ 65  49   0  31   0  12   6]
+ [  5 106   0  26   0   9   7]
+ [  1  20   0   6   0   6   7]
+ [  7  34   1 365   0  49  14]
+ [  0  10   0   7   0   3   2]
+ [  5  37   0  11   0  93   4]
+ [  5  26   0  30   0  13  37]]
+Testing DialogueGCN-Fixed7
+Validation Accuracy (Emotion):  0.5735632183908046
+F1 Weighted 0.561252685234943
+Confusion matrix [[144  94   0 110   0  41  13]
+ [ 12 229   0  58   0  33  13]
+ [  2  22   0  16   0   5   5]
+ [ 37 145   0 923   0  98  53]
+ [  2  30   0  20   0  10   6]
+ [ 16  75   0  30   0 157   3]
+ [  6  62   0  80   0  16  44]]
+Epoch[0/1] - batch 0 Error: 0.6112827658653259
+Epoch[0/1] - batch 100 Error: 111.85556982958224
+Epoch[0/1] - batch 200 Error: 214.4110262793256
+Epoch[0/1] - batch 300 Error: 316.39009641006123
+Epoch[0/1] - batch 400 Error: 422.5192035525106
+Epoch[0/1] - batch 500 Error: 523.6000189571641
+Epoch[0/1] - batch 600 Error: 625.4402222721837
+Epoch[0/1] - batch 700 Error: 736.7117033577524
+Epoch[0/1] - batch 800 Error: 844.0640174350701
+Epoch[0/1] - batch 900 Error: 954.8881188831292
+Epoch[0/1] - batch 1000 Error: 1050.2284268527292
+Epoch[0/1] - batch 1100 Error: 1161.6622647731565
+Validation Accuracy (Emotion):  0.6275924256086565
+F1 Weighted 0.5815995484647812
+Confusion matrix [[ 97   4   0  49   0  11   2]
+ [ 32  47   0  54   0  14   6]
+ [  4   6   2  12   0  13   3]
+ [  8   4   0 434   1  22   1]
+ [  1   0   0  14   1   5   1]
+ [ 23   3   0  27   0  96   1]
+ [ 12   5   0  67   0   8  19]]
+Testing DialogueGCN-Fixed8
+Validation Accuracy (Emotion):  0.6022988505747127
+F1 Weighted 0.5510209671498353
+Confusion matrix [[ 222    6    0  143    0   27    4]
+ [  88   64    1  114    0   64   14]
+ [   8    4    0   25    1    9    3]
+ [  70   10    0 1118    0   44   14]
+ [   8    6    0   33    0   15    6]
+ [  50    7    0   72    0  150    2]
+ [  23    7    1  135    0   24   18]]
+Epoch[0/1] - batch 0 Error: 0.08645659685134888
+Epoch[0/1] - batch 100 Error: 100.5347342044115
+Epoch[0/1] - batch 200 Error: 212.8786738710478
+Epoch[0/1] - batch 300 Error: 313.7713120067492
+Epoch[0/1] - batch 400 Error: 419.4779854109511
+Epoch[0/1] - batch 500 Error: 529.9325762897097
+Epoch[0/1] - batch 600 Error: 624.1672751040496
+Epoch[0/1] - batch 700 Error: 722.9188294539526
+Epoch[0/1] - batch 800 Error: 847.8937705534809
+Epoch[0/1] - batch 900 Error: 955.6546653773003
+Epoch[0/1] - batch 1000 Error: 1061.6906001682692
+Epoch[0/1] - batch 1100 Error: 1166.8628766577058
+Validation Accuracy (Emotion):  0.6275924256086565
+F1 Weighted 0.56824243386948
+Confusion matrix [[ 99   1   0  51   0  12   0]
+ [ 32  41   0  61   0  19   0]
+ [  9   4   0  14   0  11   2]
+ [  7   1   0 445   0  17   0]
+ [  0   0   0  15   0   7   0]
+ [ 16   2   0  34   0  98   0]
+ [ 14   6   0  66   0  12  13]]
+Testing DialogueGCN-Fixed9
+Validation Accuracy (Emotion):  0.6011494252873564
+F1 Weighted 0.5425128689685103
+Confusion matrix [[ 215    7    0  140    0   38    2]
+ [  87   62    0  124    0   68    4]
+ [   8    5    0   28    0    8    1]
+ [  70    8    0 1134    0   39    5]
+ [  10    8    0   34    0   13    3]
+ [  44    6    0   82    0  149    0]
+ [  24    9    0  144    0   22    9]]
+Epoch[0/1] - batch 0 Error: 1.5427871942520142
+Epoch[0/1] - batch 100 Error: 96.23241147398949
+Epoch[0/1] - batch 200 Error: 198.81984095741063
+Epoch[0/1] - batch 300 Error: 308.6629195222631
+Epoch[0/1] - batch 400 Error: 406.3276001913473
+Epoch[0/1] - batch 500 Error: 510.3522994136438
+Epoch[0/1] - batch 600 Error: 595.554168314673
+Epoch[0/1] - batch 700 Error: 692.0768376523629
+Epoch[0/1] - batch 800 Error: 791.503680566675
+Epoch[0/1] - batch 900 Error: 876.0988684368203
+Epoch[0/1] - batch 1000 Error: 976.1504692134331
+Epoch[0/1] - batch 1100 Error: 1082.6004411742906
+Validation Accuracy (Emotion):  0.672678088367899
+F1 Weighted 0.6439899905835619
+Confusion matrix [[110   3   0  36   0  10   4]
+ [ 17  74   0  40   0  14   8]
+ [  4   7   3  10   0  13   3]
+ [ 14   6   0 413   1  33   3]
+ [  1   3   1  10   0   5   2]
+ [ 10   5   1  21   0 112   1]
+ [ 11   9   0  47   0  10  34]]
+Testing DialogueGCN-Fixed10
+Validation Accuracy (Emotion):  0.5977011494252874
+F1 Weighted 0.571026224297042
+Confusion matrix [[ 227   22    0  102    0   42    9]
+ [  72  114    1   82    0   65   11]
+ [   9    9    1   19    0    5    7]
+ [  90   36    2 1010    0   88   30]
+ [   6   15    0   28    0   14    5]
+ [  40   17    0   45    0  177    2]
+ [  26   25    1  108    0   17   31]]
+Epoch[0/1] - batch 0 Error: 0.7788039445877075
+Epoch[0/1] - batch 100 Error: 92.88098702579737
+Epoch[0/1] - batch 200 Error: 192.01638064719737
+Epoch[0/1] - batch 300 Error: 288.9958909942361
+Epoch[0/1] - batch 400 Error: 388.61974765421473
+Epoch[0/1] - batch 500 Error: 479.26529173986637
+Epoch[0/1] - batch 600 Error: 586.1484843088838
+Epoch[0/1] - batch 700 Error: 685.608070115879
+Epoch[0/1] - batch 800 Error: 777.4842647158948
+Epoch[0/1] - batch 900 Error: 882.7429791964532
+Epoch[0/1] - batch 1000 Error: 978.7782666884304
+Epoch[0/1] - batch 1100 Error: 1074.1247849516512
+Validation Accuracy (Emotion):  0.6871055004508566
+F1 Weighted 0.662315664216044
+Confusion matrix [[ 86  12   1  48   0  14   2]
+ [  3  91   1  45   0   8   5]
+ [  1  14  11   6   0   6   2]
+ [  5   5   0 432   0  25   3]
+ [  1   2   3  12   1   2   1]
+ [  7  13   3  18   0 108   1]
+ [  6  13   1  50   0   8  33]]
+Testing DialogueGCN-Fixed11
+Validation Accuracy (Emotion):  0.6103448275862069
+F1 Weighted 0.5780350204624782
+Confusion matrix [[ 172   42    0  139    0   44    5]
+ [  25  157    2  108    2   40   11]
+ [   2   17    3   21    0    4    3]
+ [  41   36    7 1078    0   71   23]
+ [   3   16    1   32    1   11    4]
+ [  21   35    0   66    0  156    3]
+ [  18   27    3  121    0   13   26]]
+Epoch[0/1] - batch 0 Error: 0.5522539019584656
+Epoch[0/1] - batch 100 Error: 104.92761574941687
+Epoch[0/1] - batch 200 Error: 200.56789463502355
+Epoch[0/1] - batch 300 Error: 290.1727850094903
+Epoch[0/1] - batch 400 Error: 377.2052087590564
+Epoch[0/1] - batch 500 Error: 470.6459799360018
+Epoch[0/1] - batch 600 Error: 571.609990979312
+Epoch[0/1] - batch 700 Error: 656.6460479833913
+Epoch[0/1] - batch 800 Error: 753.8331804449699
+Epoch[0/1] - batch 900 Error: 836.4125423014193
+Epoch[0/1] - batch 1000 Error: 924.8254862839385
+Epoch[0/1] - batch 1100 Error: 1032.3043080002099
+Validation Accuracy (Emotion):  0.7096483318304779
+F1 Weighted 0.6932919810675329
+Confusion matrix [[112  10   2  30   0   2   7]
+ [  8 106   0  29   0   2   8]
+ [  1  15   9   6   0   3   6]
+ [ 14  12   0 425   0   6  13]
+ [  1   3   1  12   2   1   2]
+ [ 14  21   0  32   0  80   3]
+ [  7  15   0  35   0   1  53]]
+Testing DialogueGCN-Fixed12
+Validation Accuracy (Emotion):  0.6099616858237548
+F1 Weighted 0.5840146970868222
+Confusion matrix [[ 228   39    0  105    0   19   11]
+ [  54  162    0   95    1   17   16]
+ [   5   15    0   20    0    3    7]
+ [  92   46    1 1049    0   20   48]
+ [   6   17    0   30    1    6    8]
+ [  42   47    0   81    0  106    5]
+ [  21   30    1   99    1   10   46]]
+Epoch[0/1] - batch 0 Error: 1.1771308183670044
+Epoch[0/1] - batch 100 Error: 79.3081233998164
+Epoch[0/1] - batch 200 Error: 162.60602215929976
+Epoch[0/1] - batch 300 Error: 249.9266886537298
+Epoch[0/1] - batch 400 Error: 342.1323441891027
+Epoch[0/1] - batch 500 Error: 433.81247148197417
+Epoch[0/1] - batch 600 Error: 527.4098633443964
+Epoch[0/1] - batch 700 Error: 615.7626553393229
+Epoch[0/1] - batch 800 Error: 705.383419907771
+Epoch[0/1] - batch 900 Error: 796.8652450389955
+Epoch[0/1] - batch 1000 Error: 889.4696269443984
+Epoch[0/1] - batch 1100 Error: 975.7371597001647
+Validation Accuracy (Emotion):  0.739404869251578
+F1 Weighted 0.7197318059875428
+Confusion matrix [[102   6   0  43   0  10   2]
+ [  9 101   0  33   1   5   4]
+ [  3  10  10   5   3   6   3]
+ [  3   5   0 444   0  14   4]
+ [  0   3   1  11   5   1   1]
+ [  5   7   1  17   0 119   1]
+ [  5  11   1  50   2   3  39]]
+Testing DialogueGCN-Fixed13
+Validation Accuracy (Emotion):  0.6057471264367816
+F1 Weighted 0.5716610394048199
+Confusion matrix [[ 199   25    0  139    0   32    7]
+ [  49  120    3  104    3   48   18]
+ [   7   10    1   23    2    3    4]
+ [  50   29    3 1083    3   65   23]
+ [   6   14    1   33    2   10    2]
+ [  31   21    1   68    2  152    6]
+ [  16   19    2  129    2   16   24]]
+Epoch[0/1] - batch 0 Error: 0.16106319427490234
+Epoch[0/1] - batch 100 Error: 78.26543062925339
+Epoch[0/1] - batch 200 Error: 161.82402551046107
+Epoch[0/1] - batch 300 Error: 237.9002164764679
+Epoch[0/1] - batch 400 Error: 325.5361317517818
+Epoch[0/1] - batch 500 Error: 405.74996523099253
+Epoch[0/1] - batch 600 Error: 490.0040018779546
+Epoch[0/1] - batch 700 Error: 574.8233672261558
+Epoch[0/1] - batch 800 Error: 678.4627534134634
+Epoch[0/1] - batch 900 Error: 756.3372367920674
+Epoch[0/1] - batch 1000 Error: 837.9235939609207
+Epoch[0/1] - batch 1100 Error: 930.2809417529352
+Validation Accuracy (Emotion):  0.7529305680793508
+F1 Weighted 0.7420432901288677
+Confusion matrix [[112   8   0  32   0  11   0]
+ [  3 109   1  31   2   5   2]
+ [  1   5  15   6   0  11   2]
+ [ 13  11   0 421   0  18   7]
+ [  0   3   1   9   6   3   0]
+ [  5   6   4  11   0 122   2]
+ [  9  10   2  34   1   5  50]]
+Testing DialogueGCN-Fixed14
+Validation Accuracy (Emotion):  0.5938697318007663
+F1 Weighted 0.5672139049939539
+Confusion matrix [[ 195   32    2  123    1   45    4]
+ [  44  118    9   99    7   60    8]
+ [   4   11    5   20    1    5    4]
+ [  70   40   10 1032    2   80   22]
+ [   7   13    2   32    1   11    2]
+ [  29   18    2   53    3  174    2]
+ [  22   17   10  110    2   22   25]]
+Epoch[0/1] - batch 0 Error: 0.4288358986377716
+Epoch[0/1] - batch 100 Error: 73.62513202801347
+Epoch[0/1] - batch 200 Error: 158.94430185551755
+Epoch[0/1] - batch 300 Error: 231.8301662569961
+Epoch[0/1] - batch 400 Error: 320.6529459720573
+Epoch[0/1] - batch 500 Error: 398.1036214558503
+Epoch[0/1] - batch 600 Error: 484.6157600313404
+Epoch[0/1] - batch 700 Error: 567.6419804188868
+Epoch[0/1] - batch 800 Error: 651.5005604462832
+Epoch[0/1] - batch 900 Error: 738.5536663236172
+Epoch[0/1] - batch 1000 Error: 820.3130679057987
+Epoch[0/1] - batch 1100 Error: 894.7786187368957
+Validation Accuracy (Emotion):  0.7592425608656447
+F1 Weighted 0.7476105893733511
+Confusion matrix [[105   6   0  39   0  10   3]
+ [  4  92   1  37   3   9   7]
+ [  0   3  22   4   0   7   4]
+ [  2   5   2 446   0  12   3]
+ [  0   2   2  10   6   2   0]
+ [  3   6   2  21   0 118   0]
+ [  3   8   4  38   1   4  53]]
+Testing DialogueGCN-Fixed15
+Validation Accuracy (Emotion):  0.59272030651341
+F1 Weighted 0.5615245987874102
+Confusion matrix [[ 171   21    3  141    2   54   10]
+ [  36  106   11  112    8   58   14]
+ [   5    8    3   25    1    6    2]
+ [  48   23    8 1078    7   58   34]
+ [   2   10    0   31    2   18    5]
+ [  25   13    3   74    2  158    6]
+ [  16   17    6  123    0   17   29]]
+Epoch[0/1] - batch 0 Error: 0.26698973774909973
+Epoch[0/1] - batch 100 Error: 68.50614229915664
+Epoch[0/1] - batch 200 Error: 146.06519776132518
+Epoch[0/1] - batch 300 Error: 230.00754481290096
+Epoch[0/1] - batch 400 Error: 306.6062803782206
+Epoch[0/1] - batch 500 Error: 388.8657857746239
+Epoch[0/1] - batch 600 Error: 469.35451679379366
+Epoch[0/1] - batch 700 Error: 539.1078227301423
+Epoch[0/1] - batch 800 Error: 622.1552304196903
+Epoch[0/1] - batch 900 Error: 699.7390926244134
+Epoch[0/1] - batch 1000 Error: 772.277082863513
+Epoch[0/1] - batch 1100 Error: 857.6500180183084
+Validation Accuracy (Emotion):  0.7871956717763751
+F1 Weighted 0.7795059134635745
+Confusion matrix [[120   6   0  28   1   7   1]
+ [  8 118   1  14   6   5   1]
+ [  1   8  14   9   0   5   3]
+ [  8  13   0 434   0   9   6]
+ [  1   3   1   7   8   1   1]
+ [  7   6   1  15   2 119   0]
+ [  6   8   4  28   3   2  60]]
+Testing DialogueGCN-Fixed16
+Validation Accuracy (Emotion):  0.5877394636015326
+F1 Weighted 0.5608944659770252
+Confusion matrix [[ 220   21    0  124    2   27    8]
+ [  62  116    3   93   13   44   14]
+ [   8   12    1   21    1    4    3]
+ [  90   42    5 1035   19   45   20]
+ [   5   12    0   29    6   11    5]
+ [  39   24    1   77    5  133    2]
+ [  24   25    4  114    4   14   23]]
+Epoch[0/1] - batch 0 Error: 0.477731853723526
+Epoch[0/1] - batch 100 Error: 74.61312878725585
+Epoch[0/1] - batch 200 Error: 146.0756198978779
+Epoch[0/1] - batch 300 Error: 223.62964824889423
+Epoch[0/1] - batch 400 Error: 299.28048928756834
+Epoch[0/1] - batch 500 Error: 371.4505884279849
+Epoch[0/1] - batch 600 Error: 453.73072466056936
+Epoch[0/1] - batch 700 Error: 539.5138469705187
+Epoch[0/1] - batch 800 Error: 603.4215252496131
+Epoch[0/1] - batch 900 Error: 681.9106371126898
+Epoch[0/1] - batch 1000 Error: 768.2673383557765
+Epoch[0/1] - batch 1100 Error: 832.1467568685828
+Validation Accuracy (Emotion):  0.7844905320108205
+F1 Weighted 0.7800617067964777
+Confusion matrix [[102  11   4  27   1  11   7]
+ [  0 112   2  25   0   4  10]
+ [  0   3  24   5   1   4   3]
+ [  4   7   2 429   0  11  17]
+ [  0   3   0   8   8   1   2]
+ [  3   8   4  11   1 121   2]
+ [  2   8   1  24   0   2  74]]
+Testing DialogueGCN-Fixed17
+Validation Accuracy (Emotion):  0.5881226053639846
+F1 Weighted 0.5672197887056811
+Confusion matrix [[ 151   43    5  127    1   50   25]
+ [  27  135    8   97    5   43   30]
+ [   1   10    8   20    0    4    7]
+ [  57   31    5 1047    7   61   48]
+ [   4   13    0   27    4   13    7]
+ [  25   29    3   64    3  150    7]
+ [  17   20    3  109    2   17   40]]
+Epoch[0/1] - batch 0 Error: 0.43725723028182983
+Epoch[0/1] - batch 100 Error: 60.850556185352616
+Epoch[0/1] - batch 200 Error: 135.01136291518924
+Epoch[0/1] - batch 300 Error: 200.88364507467486
+Epoch[0/1] - batch 400 Error: 264.7998509177751
+Epoch[0/1] - batch 500 Error: 347.6471172670181
+Epoch[0/1] - batch 600 Error: 406.0409806465659
+Epoch[0/1] - batch 700 Error: 469.4273469158067
+Epoch[0/1] - batch 800 Error: 533.7284511200703
+Epoch[0/1] - batch 900 Error: 596.451635298188
+Epoch[0/1] - batch 1000 Error: 672.7743119102522
+Epoch[0/1] - batch 1100 Error: 738.7479794025855
+Validation Accuracy (Emotion):  0.806131650135257
+F1 Weighted 0.8020289838785369
+Confusion matrix [[128   8   0  19   0   8   0]
+ [  5 125   1  14   1   3   4]
+ [  1   7  16   4   3   6   3]
+ [ 11   7   0 423   2  17  10]
+ [  0   3   0   4  14   0   1]
+ [  5  16   0   7   1 120   1]
+ [ 10   8   0  21   1   3  68]]
+Testing DialogueGCN-Fixed18
+Validation Accuracy (Emotion):  0.5766283524904214
+F1 Weighted 0.5521567413754506
+Confusion matrix [[201  49   0 108   2  35   7]
+ [ 50 146   0  88   9  44   8]
+ [  6  17   0  17   0   4   6]
+ [ 92  61   1 996   7  76  23]
+ [  8  16   0  28   1  12   3]
+ [ 34  39   0  62   1 141   4]
+ [ 28  30   5 108   1  16  20]]
+Epoch[0/1] - batch 0 Error: 8.15377426147461
+Epoch[0/1] - batch 100 Error: 69.77338882349432
+Epoch[0/1] - batch 200 Error: 141.187507830827
+Epoch[0/1] - batch 300 Error: 202.87595002496286
+Epoch[0/1] - batch 400 Error: 271.9024106724004
+Epoch[0/1] - batch 500 Error: 327.0767293595758
+Epoch[0/1] - batch 600 Error: 399.4377881675076
+Epoch[0/1] - batch 700 Error: 465.11263801322673
+Epoch[0/1] - batch 800 Error: 538.5245076648647
+Epoch[0/1] - batch 900 Error: 602.346361710945
+Epoch[0/1] - batch 1000 Error: 670.8198118147246
+Epoch[0/1] - batch 1100 Error: 738.7232300379042
+Validation Accuracy (Emotion):  0.842200180342651
+F1 Weighted 0.8411821588078708
+Confusion matrix [[133   6   1  16   0   6   1]
+ [  2 128   0  13   6   1   3]
+ [  1   2  25   3   0   7   2]
+ [ 11   5   5 426   4   5  14]
+ [  0   2   0   3  16   0   1]
+ [  3   5   1   7   1 132   1]
+ [  6   8   2  17   2   2  74]]
+Testing DialogueGCN-Fixed19
+Validation Accuracy (Emotion):  0.5754789272030651
+F1 Weighted 0.5593092484176458
+Confusion matrix [[216  33   0 112   4  29   8]
+ [ 50 139   8  78  10  48  12]
+ [ 10  13   2  16   1   4   4]
+ [100  64   9 973  25  57  28]
+ [  8  15   0  26   9   5   5]
+ [ 39  30   3  65   4 137   3]
+ [ 31  26   4 104   4  13  26]]
