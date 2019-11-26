@@ -16,7 +16,6 @@ def detect_face(imgs, minsize, pnet, rnet, onet, threshold, factor, device):
         imgs = torch.zeros(3, 3, 720, 1280)
     else:
         imgs = torch.stack(imgs).permute(0, 3, 1, 2)
-
     batch_size = len(imgs)
     h, w = imgs.shape[2:4]
     m = 12.0 / minsize
@@ -253,6 +252,8 @@ def extract_face(img, box, image_size=160, margin=0, save_path=None):
     Returns:
         torch.tensor -- tensor representing the extracted face.
     """
+    #img = img.clone().cpu().detach().numpy()
+    #img = Image.fromarray(img)
     margin = [
         margin * (box[2] - box[0]) / (image_size - margin),
         margin * (box[3] - box[1]) / (image_size - margin),

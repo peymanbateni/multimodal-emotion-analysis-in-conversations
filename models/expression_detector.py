@@ -6,6 +6,7 @@ import torch.backends.cudnn as cudnn
 import os
 import torch.nn as nn
 import torch.nn.parallel
+import torch.nn.functional as functional
 import torch.optim
 import torch.utils.data
 import numpy as np
@@ -71,8 +72,8 @@ class ExpressionDetector(torch.nn.Module):
         print(len(emotion_output))
 
         # placeholder:
+        sentiment_output = torch.zeros(len(emotion_output), 3).cuda()
         emotion_output = torch.cat(emotion_output, dim=0)
-        sentiment_output = torch.zeros(len(faces), 3).cuda()
         print("EMOTION", emotion_output.size())
         print("SENTIMENT", sentiment_output.size())
         return emotion_output, sentiment_output
@@ -94,6 +95,14 @@ class AttentionConvWrapper(torch.nn.Module):
             _, N, F, C, W, H = faces.shape
 
             face_stack = faces.squeeze(0).view(N * F, C, W, H).to("cuda")
+
+            if N == 0:
+                pass
+                #return torch.zeros(1, 7, dtype=float).to("cuda"), torch.zeros(0, 3, dtype=float).to("cuda")
+            if W != 48 or H != 48:
+                face_stack = functional.interpolate(face_stack, (48, 48))
+            #print(face_stack.shape)
+
             emotions, sentiments = self.model(face_stack)
 
             # TODO: placeholder aggregation method 
@@ -101,5 +110,5 @@ class AttentionConvWrapper(torch.nn.Module):
             sentiment_output.append(torch.max(sentiments, dim=0).values.unsqueeze(0))
 
             #print(emotions)
-        #print(emotion_output[0].shape)
+        #print(emotion_output[0].shape) 
         return torch.cat(emotion_output), torch.cat(sentiment_output)

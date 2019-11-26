@@ -30,6 +30,8 @@ else:
 val_dataset = MELDDataset("../MELD.Raw/dev_sent_emo.csv", "../MELD.Raw/dev_splits_complete/", val_audio_emb, name="val", visual_features=False)
 train_dataset = MELDDataset("../MELD.Raw/train_sent_emo.csv", "../MELD.Raw/train_splits/", train_audio_emb, name="train", visual_features=False, )
 
+val_dataset = MELDDataset("../MELD.Raw/dev_sent_emo.csv", "../MELD.Raw/dev_splits_complete/", val_audio_emb, name="val", visual_features=True)
+train_dataset = MELDDataset("../MELD.Raw/train_sent_emo.csv", "../MELD.Raw/train_splits/", train_audio_emb, name="train", visual_features=True, )
 if config.eval_on_test:
     train_dataset = ConcatDataset([train_dataset, val_dataset])
 test_dataset = MELDDataset("../MELD.Raw/test_sent_emo.csv", "../MELD.Raw/output_repeated_splits_test", test_audio_emb, name="test", visual_features=False)
@@ -50,6 +52,7 @@ def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentimen
             if (i % 100 == 0):
                 print("Epoch[" + str(epoch) + "/" + str(config.num_epochs) +"] - batch " + str(i) + " Error: " + str(loss_acc))
                 #loss_acc = 0
+            break
 
         model = model.eval()
         emotion_predicted_labels = []
@@ -111,6 +114,9 @@ def get_weighted_F1(emotion_f1s, sentiment_f1s, targets):
     return emotion_weighted_f1, sentiment_weighted_f1
 
 def get_accuracy(predicted_emotion, predicted_sentiment, target):
+    print(target.size())
+    print(predicted_emotion.size())
+    print(predicted_sentiment.size())
     emotion_accuracy_acc = torch.eq(predicted_emotion, target[:,0]).sum().item() / target.size(0)
     sentiment_accuracy_acc = torch.eq(predicted_sentiment, target[:,1]).sum().item() / target.size(0)
     return emotion_accuracy_acc, sentiment_accuracy_acc
