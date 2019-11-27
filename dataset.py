@@ -177,7 +177,7 @@ class Utterance(object):
         Loads the video into memory and converts the frames into a pyTorch tensor
         """
         #print(self.file_path)
-        return ''#video_to_tensor(self.file_path)
+        return video_to_tensor(self.file_path)
 
     def get_cached_visual_features(self, max_persons=7, output_size=224, sampling_rate=30, display_images=False):
 

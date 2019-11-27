@@ -155,10 +155,8 @@ class ExpressionDetector(torch.nn.Module):
         for i, faces in enumerate(faces_vector):
             # note each of these is all the faces in one utterances (N, C, W, H)
             if (faces.size(1) != 0):
-
                 if self.face_matching and faces.size(1) > 1:
                     faces = self.get_face_matchings(faces)
-
                 faces = faces.cuda()
                 print("faces size", faces.size())
                 print(faces.is_cuda)
