@@ -6,6 +6,7 @@ from torch.nn.parameter import Parameter
 from transformers import BertModel, BertTokenizer
 from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence, pad_packed_sequence, PackedSequence
 from models.visual_features import FaceModule
+from models.expression_detector import ExpressionDetector
 
 
 class DialogueGCN(nn.Module):
@@ -16,8 +17,11 @@ class DialogueGCN(nn.Module):
         self.att_window_size = config.att_window_size
         self.utt_embed_size = config.utt_embed_size
         self.text_encoder = nn.GRU(config.text_in_dim, config.text_out_dim, bidirectional=True, batch_first=True)
-        if self.config.use_meld_audio or self.config.use_our_audio:
-            if self.config.use_texts:
+        if self.config.use_meld_audio or self.config.use_our_audio:          
+            # HACK:
+            if self.config.use_visual:
+                self.context_encoder = nn.GRU(config.context_in_dim * 3 + 10, config.context_out_dim, bidirectional=True, batch_first=True)
+            elif self.config.use_texts:
                 self.context_encoder = nn.GRU(config.context_in_dim * 3, config.context_out_dim, bidirectional=True, batch_first=True)
             else:
                 self.context_encoder = nn.GRU(config.context_in_dim * 1, config.context_out_dim, bidirectional=True, batch_first=True)
@@ -49,6 +53,7 @@ class DialogueGCN(nn.Module):
         for param in self.bert.parameters():
             param.requires_grad = False
 
+        self.visual_model = ExpressionDetector(config.fan_weights_path, face_matching=True)
         #self.face_module = FaceModule()
 
     def forward(self, x):
@@ -70,7 +75,12 @@ class DialogueGCN(nn.Module):
                 indept_embeds = torch.cat([indept_embeds, audio], dim=2)
             else:
                 indept_embeds = audio
-                
+
+
+        if self.config.use_visual:
+            visual_embeds, sent_embeds = self.visual_model(video)
+            indept_embeds = torch.cat([indept_embeds, visual_embeds.unsqueeze(0), sent_embeds.unsqueeze(0)], dim=2)
+
         context_embeds = self.context_encoder(indept_embeds)[0].squeeze(0)
         #face_embeds = self.face_module(video)
         relation_matrices = self.construct_edges_relations(context_embeds, speakers)

@@ -32,7 +32,7 @@ def video_to_tensor(video_file):
         fc += 1
 
     cap.release()
-    return torch.tensor(buf)
+    return torch.tensor(buf[::30])
 
 class Dialogue(object):
     """
@@ -194,9 +194,9 @@ class Utterance(object):
         if not os.path.exists(file_path):
             #print("No cached features found, generating new features for dialogue: {}, utterance: {} ({}, {}, {})".format(self.dialogue_id, self.utterance_id, max_persons, sampling_rate, output_size))
             video_tensor = self.load_video()
-            face_vector = detect_faces_mtcnn(video_tensor, max_persons, output_size, sampling_rate, display_images)
-            #return face_vector
-            torch.save(face_vector, file_path)
+            face_vector = detect_faces_mtcnn(video_tensor, max_persons, output_size, 1, display_images)
+            return face_vector
+            #torch.save(face_vector, file_path)
         #else:
             #print("Retrieved cached visual features for dialogue: {}, utterance: {} ({}, {}, {})".format(self.dialogue_id, self.utterance_id, max_persons, sampling_rate, output_size))
         #print(torch.load(file_path))

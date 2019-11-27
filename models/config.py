@@ -20,7 +20,8 @@ class Config:
         self.num_epochs = 14
         self.use_meld_audio=True
         self.use_our_audio=False
+        self.use_visual=True
         self.use_texts=True
-        self.visual_features=False
+        self.visual_features=True
         #self.save_model=True
 
