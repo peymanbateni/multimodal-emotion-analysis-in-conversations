@@ -235,7 +235,7 @@ def test_step(model, input, target):
 dumb_model = DummyModel()
 emotion_criterion = nn.CrossEntropyLoss()
 sentiment_criterion = nn.CrossEntropyLoss()
-model_name = "Visual"
+model_name = "text_audio"
 #train_loader = DataLoader(train_dataset, batch_size=100, shuffle=True)
 #val_loader = DataLoader(val_dataset, batch_size=100, shuffle=True)
 #test_loader = DataLoader(test_dataset, batch_size=100, shuffle=True)
@@ -264,6 +264,6 @@ if config.model_type == 'dummy':
 #return
 optimisation_unit = optim.Adam(model.parameters(), lr=config.lr, weight_decay=config.l2)
 
-for i in range(20):
+for i in range(1):
     train_and_validate(model_name + str(i), model, optimisation_unit, emotion_criterion, sentiment_criterion, train_loader, val_loader)
     test_model(model_name + str(i), model, test_loader)
