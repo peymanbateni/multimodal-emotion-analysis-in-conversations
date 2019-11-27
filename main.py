@@ -237,7 +237,7 @@ if config.model_type == 'dialoguegcn':
     model = DialogueGCN(config)
     model = model.to("cuda")
 elif config.model_type == 'fan':
-    model = ExpressionDetector(config.fan_weights_path)
+    model = ExpressionDetector(config.fan_weights_path, config.face_matching)
     model = model.to("cuda")
 elif config.model_type == 'acn':
     model = AttentionConvWrapper()
