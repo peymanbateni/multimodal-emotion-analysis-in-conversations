@@ -10,6 +10,9 @@ import cv2
 from scipy.io import wavfile
 import pickle
 from models.visual_features import detect_faces_mtcnn
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import LinearSVC
 
 def video_to_tensor(video_file):
     """ Converts a mp4 file into a pytorch tensor"""
@@ -80,7 +83,7 @@ class Dialogue(object):
         """
         Method returns a list of audio embeddings for each utterance
         """
-        return [utterance.load_audio() for utterance in self.utterances]
+        return [utterance.load_audio() for utterance in self.utterances]#, [utterance.load_audio()[1] for utterance in self.utterances]
 
     def get_speakers(self):
         """
@@ -235,7 +238,7 @@ class MELDDataset(Dataset):
     load_sample_video(index): loads the video tensor retrieved from index
     """
 
-    def __init__(self, csv_file, root_dir, audio_embs, name, visual_features=False):
+    def __init__(self, csv_file, root_dir, audio_embs, name, config):
         self.csv_records = pd.read_csv(csv_file)
         self.root_dir = os.path.abspath(root_dir)
         self.name = name
@@ -270,10 +273,7 @@ class MELDDataset(Dataset):
             file_path = "dia{}_utt{}.mp4".format(d_id, u_id)
             file_path = os.path.join(self.root_dir, file_path)
             utt_audio_embed_id = str(d_id) + "_" + str(u_id)
-            try:
-                utt_audio_embed = audio_embs[utt_audio_embed_id]
-            except KeyError:
-                utt_audio_embed = (torch.zeros(128, 1).to('cuda'), torch.zeros(20, 1).to('cuda'))
+            utt_audio_embed = audio_embs[utt_audio_embed_id]
             utterance = Utterance(
                 d_id,
                 u_id,
@@ -292,7 +292,7 @@ class MELDDataset(Dataset):
             # Assumes no gaps in dialogue id
             # Assumes no gaps in utterance ids            
             utteraences = utterances.sort(key=lambda x: x.utterance_id)
-            self.data.append(Dialogue(d_id, utterances, visual_features=visual_features))
+            self.data.append(Dialogue(d_id, utterances, visual_features=config.visual_features))
 
     def __len__(self):
         return len(self.data)
@@ -308,7 +308,52 @@ class MELDDataset(Dataset):
 
     def load_sample_video(self, idx):
         return self.data[idx].load_video()
-
+    
+    def find_audio_stats(self):
+        print("=== Constructing train dataset audio statistics ===")
+        audio_fixed_acc = []
+        labels = []
+        #audio_temp_acc = []
+        for dialogue in self.data:
+            for utterance in dialogue.utterances:
+                curr_audio, curr_temp = utterance.load_audio()[0], utterance.load_audio()[1]
+                audio_fixed_acc.append(curr_audio)
+                labels.append(utterance.get_label()[0])
+                #audio_temp_acc.append(torch.FloatTensor(curr_temp))
+        labels = np.array(labels)
+        audio_fixed_feats = np.concatenate(audio_fixed_acc, axis=0)
+        print("FIXED", audio_fixed_feats.shape)
+        
+        scaler = StandardScaler()
+        audio_fixed_feats = scaler.fit_transform(audio_fixed_feats)
+        pca = PCA(n_components=350, svd_solver='full')
+        reduced = pca.fit_transform(audio_fixed_feats)
+        print(np.isnan(reduced).any())
+        print(pca.components_.shape, reduced.shape)
+        print(np.sum(pca.explained_variance_ratio_), pca.explained_variance_ratio_[:30])
+        #audio_temp_feats = torch.cat(audio_temp_acc, dim=0)
+        #means_temp = torch.mean(audio_temp_feats, dim=0)
+        #sds_temp = torch.std(audio_temp_feats, dim=0)
+        print("=== Finished audio statistics ===")
+        return scaler, pca# means_temp, sds_temp
+    
+    def apply_audio_transform(self, params):
+        scaler, pca = params #means_temp, sds_temp = params
+        print("Applying audio feature transforms to ", self.name)
+        for i, dialogue in enumerate(self.data):
+            if (i % 100 == 0):
+                print(i)
+            for j, utterance in enumerate(dialogue.utterances):
+                curr_audio, temp = utterance.load_audio()[0], torch.FloatTensor(utterance.load_audio()[1])
+                curr_audio = scaler.transform(curr_audio)
+                curr_audio = pca.transform(curr_audio)
+                #temp -= means_temp
+                #temp /= sds_temp
+                utterance.utt_audio = (torch.FloatTensor(curr_audio).squeeze(0), temp)
+                dialogue.utterances[j] = utterance
+            self.data[i] = dialogue
+        print("Applied audio feature transform to ", self.name)
+        
     """
     def load_sample_audio(audio_file_address):
         return torchaudio.load(audio_file_address)
@@ -334,4 +379,13 @@ class MELDDataset(Dataset):
 
         image_tensors = torch.cat(image_list, dim=0)
         return image_tensors
+                    if config.use_our_audio:
+                try:
+                    audio_embs_fixed, audio_embs_temporal = audio_embs
+                    utt_audio_embed = (audio_embs_fixed[utt_audio_embed_id], audio_embs_temporal[utt_audio_embed_id])
+                except KeyError:
+                    utt_audio_embed = (np.zeros((1, 6373)), np.zeros((1, 142)))
+            else:
+                utt_audio_embed = audio_embs[utt_audio_embed_id]
+
     """

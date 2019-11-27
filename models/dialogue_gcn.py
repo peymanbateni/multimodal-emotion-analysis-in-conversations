@@ -17,17 +17,12 @@ class DialogueGCN(nn.Module):
         self.utt_embed_size = config.utt_embed_size
         self.text_encoder = nn.GRU(config.text_in_dim, config.text_out_dim, bidirectional=True, batch_first=True)
         if self.config.use_meld_audio or self.config.use_our_audio:
-            if self.config.config.use_texts:
+            if self.config.use_texts:
                 self.context_encoder = nn.GRU(config.context_in_dim * 3, config.context_out_dim, bidirectional=True, batch_first=True)
             else:
                 self.context_encoder = nn.GRU(config.context_in_dim * 1, config.context_out_dim, bidirectional=True, batch_first=True)
-            self.audio_rnn = nn.GRU(41, 50, bidirectional=True, batch_first=True)
             self.audio_W = nn.Linear(1422, config.audio_out_dim, bias=True)
             self.audio_attn = nn.Linear(100, 1, bias=False)
-            self.conv1_mel = nn.Conv2d(1, 30, 3, stride=2, padding=2)
-            self.conv2_mel = nn.Conv2d(30 , 1, 3, stride=2, padding=2)
-            self.conv1_mfcc = nn.Conv2d(1, 30, 3, stride=2,padding=2)
-            self.conv2_mfcc = nn.Conv2d(30 , 1, 3, stride=2, padding=2)            
         else:
             self.context_encoder = nn.GRU(config.context_in_dim * 2, config.context_out_dim, bidirectional=True, batch_first=True)#
 #        self.vis_W = nn.Linear(config.vis_in_dim, config.vis_out_dim, bias=True)
@@ -71,7 +66,7 @@ class DialogueGCN(nn.Module):
                 indept_embeds = audio            
         elif self.config.use_our_audio:
             audio = self.embed_audio(audio)
-            if self.config.config.use_texts:
+            if self.config.use_texts:
                 indept_embeds = torch.cat([indept_embeds, audio], dim=2)
             else:
                 indept_embeds = audio
@@ -96,7 +91,7 @@ class DialogueGCN(nn.Module):
         h = torch.cat([h2, context_embeds], dim=1)
         
         return self.w_emotion_2(torch.relu(self.w_emotion_1(h))), self.w_sentiment(h)
-
+    
     def embed_text(self, utterances):
         # Input is a tensor of size N x L x G
         #   N - number of utterances
@@ -124,7 +119,6 @@ class DialogueGCN(nn.Module):
             text_raw_attn = self.text_attn(word_vecs)
             text_attn = torch.softmax(text_raw_attn, dim=0)
             att_vec = word_vecs * text_attn
-            #print(att_vec, att_vec.sum(dim=0).size())
             averaged_vectors.append(att_vec.sum(dim=0))
         encoded_text = torch.stack(averaged_vectors, dim=0)
         # Sorts back to original order
@@ -135,14 +129,9 @@ class DialogueGCN(nn.Module):
     def embed_audio(self, audio):
         lengths = []
         audios = []
-#        print("audio size ", len(audio))
         for i, utt in enumerate(audio):
-            melspec, mfcc = utt[0], utt[1]
-            melspec = melspec.reshape(melspec.size(-1), -1).to('cuda').unsqueeze(0).unsqueeze(0)
-            mfcc = mfcc.reshape(mfcc.size(-1), -1).to('cuda').unsqueeze(0).unsqueeze(0)
-            melspec = self.conv2_mel(torch.relu(self.conv1_mel(melspec))).squeeze(0).squeeze(0)
-            mfcc = self.conv2_mfcc(torch.relu(self.conv1_mfcc(mfcc))).squeeze(0).squeeze(0)
-            audio_feat = torch.cat([melspec, mfcc], dim=1)
+            utt = utt.squeeze(0)
+            audio_feat = self.audio_W_temp_2(torch.relu(self.audio_W_temp_1(utt.to("cuda"))))
             audios.append(audio_feat)
             lengths.append(audio_feat.size(0))
         audios = pad_sequence(audios, batch_first=True)
@@ -160,7 +149,6 @@ class DialogueGCN(nn.Module):
             audio_raw_attn = self.audio_attn(audio_vecs)
             audio_attn = torch.softmax(audio_raw_attn, dim=0)
             att_vec = audio_vecs * audio_attn
-            #print(att_vec, att_vec.sum(dim=0).size())
             averaged_vectors.append(att_vec.sum(dim=0))
         encoded_audio = torch.stack(averaged_vectors, dim=0)
         # Sorts back to original order
@@ -184,14 +172,12 @@ class DialogueGCN(nn.Module):
             right_bdry = min(num_utts, i + self.att_window_size + 1)
             for j in range(left_bdry, right_bdry):
                 attn[i, j] = curr_utt.dot(ut_embs[j])
-        # TODO: Problematic: zero elements pull nonzero attention weights
         attn = torch.softmax(attn, dim=1)
         relation_matrices = self.build_relation_matrices(ut_embs, speaker_ids, attn)
         return relation_matrices
     
     def build_relation_matrices(self, ut_embs, speaker_ids, attn_mask):
         num_utt = len(ut_embs)
-        #print("Number of utterances: ", num_utt)
         num_speakers = len(np.unique(speaker_ids))
         pred_adj = torch.ones(num_utt, num_utt, dtype=torch.float).triu(0).to("cuda")
         suc_adj = 1 - pred_adj
@@ -205,3 +191,70 @@ class DialogueGCN(nn.Module):
         diff_adj_pred = diff_adj_matrix.float() * pred_adj.float() * attn_mask
         diff_adj_post = diff_adj_matrix.float() * suc_adj.float() * attn_mask
         return same_adj_pred, same_adj_post, diff_adj_pred, diff_adj_post, attn_mask
+    """
+        def __init__(self, config):
+        super(DialogueGCN, self).__init__()
+        self.config = config
+        self.att_window_size = config.att_window_size
+        self.utt_embed_size = config.utt_embed_size
+        self.text_encoder = nn.GRU(config.text_in_dim, config.text_out_dim, bidirectional=True, batch_first=True)
+        if self.config.use_meld_audio or self.config.use_our_audio:
+            if self.config.use_texts:
+                self.context_encoder = nn.GRU(config.context_in_dim * 2, config.context_out_dim, bidirectional=True, batch_first=True)
+            else:
+                self.context_encoder = nn.GRU(config.context_in_dim, config.context_out_dim, bidirectional=True, batch_first=True)
+            self.audio_W_fixed_1 = nn.Linear(350, 100, bias=True)
+        else:
+            self.context_encoder = nn.GRU(config.context_in_dim * 2, config.context_out_dim, bidirectional=True, batch_first=True)#
+        self.pred_rel_l1 = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
+        self.suc_rel_l1 = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
+        self.same_speak_rel_l1 = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
+        self.diff_speak_rel_l1 = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
+        
+        self.pred_rel_l2 = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
+        self.suc_rel_l2 = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
+        self.same_speak_rel_l2 = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
+        self.diff_speak_rel_l2 = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
+        self.edge_att_weights = nn.Linear(self.utt_embed_size*2, self.utt_embed_size*2, bias=False)
+        self.w_aggr_1 = nn.Parameter(torch.FloatTensor(self.utt_embed_size*2, self.utt_embed_size*2))
+        self.w_aggr_2 = nn.Parameter(torch.FloatTensor(self.utt_embed_size*2, self.utt_embed_size*2))
+        
+        self.text_attn = nn.Linear(self.utt_embed_size * 2, 1)
+        self.w_sentiment = nn.Linear(self.utt_embed_size*5, 3)
+        self.w_emotion_1 = nn.Linear(self.utt_embed_size*5, self.utt_embed_size * 2)
+        self.w_emotion_2 = nn.Linear(self.utt_embed_size * 2, 7)
+
+        self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+        self.bert = BertModel.from_pretrained('bert-base-uncased')
+        for param in self.bert.parameters():
+            param.requires_grad = False
+
+
+    def forward(self, x):
+        transcripts, video, audio, speakers = x
+        speakers.squeeze_(0)
+        if self.config.use_texts:
+            indept_embeds = self.embed_text(transcripts)
+        if self.config.use_our_audio:
+            audio_fixed = torch.cat(audio[0], dim=0).float().to('cuda')
+            audio_fixed = self.audio_W_fixed_1(audio_fixed)
+        context_embeds = self.context_encoder(indept_embeds)[0].squeeze(0)
+        #face_embeds = self.face_module(video)
+        relation_matrices = self.construct_edges_relations(context_embeds, speakers)
+        pred_adj, suc_adj, same_speak_adj, diff_adj_matrix, attn = relation_matrices
+        
+        h1 = self.pred_rel_l1(context_embeds, pred_adj)
+        h1 += self.suc_rel_l1(context_embeds, suc_adj)
+        h1 += self.same_speak_rel_l1(context_embeds, same_speak_adj)
+        h1 += self.diff_speak_rel_l1(context_embeds, diff_adj_matrix)
+        h1 = torch.relu(h1 + torch.matmul(context_embeds, self.w_aggr_1) * attn.diag().unsqueeze(1))
+        
+        h2 = self.pred_rel_l2(h1, pred_adj)
+        h2 += self.suc_rel_l2(h1, suc_adj)
+        h2 += self.same_speak_rel_l2(h1, same_speak_adj)
+        h2 += self.diff_speak_rel_l2(h1, diff_adj_matrix)
+        h2 = torch.relu(h2 + torch.matmul(h1, self.w_aggr_2) * attn.diag().unsqueeze(1))
+        print(context_embeds.shape, audio_fixed.shape)
+        h = torch.cat([h2, context_embeds, audio_fixed], dim=1)
+        return self.w_emotion_2(torch.relu(self.w_emotion_1(h))), self.w_sentiment(h)
+    """

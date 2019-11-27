@@ -17,7 +17,9 @@ class Config:
         self.l2=0.00001
         self.eval_on_test=False
         self.num_epochs = 1
-        self.use_meld_audio=False
+        self.use_meld_audio=True
         self.use_our_audio=False
         self.use_texts=True
+        self.visual_features=False
+        #self.save_model=True
 

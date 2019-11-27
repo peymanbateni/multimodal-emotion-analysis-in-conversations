@@ -12,6 +12,8 @@ from torch.utils.data import ConcatDataset
 from sklearn.metrics import f1_score, confusion_matrix
 from models.expression_detector import ExpressionDetector, AttentionConvWrapper
 
+import os 
+os.environ["CUDA_VISIBLE_DEVICES"] ="1"
 
 
 config = Config()
@@ -26,13 +28,16 @@ else:
     #audio_embed_path = "../MELD.Features.Models/features/audio_embeddings_feature_selection_emotion.pkl"
     audio_embed_path = "../MELD.Raw/audio_embeddings_feature_selection_sentiment.pkl"
     train_audio_emb, val_audio_emb, test_audio_emb = pickle.load(open(audio_embed_path, 'rb'))
-
-val_dataset = MELDDataset("../MELD.Raw/dev_sent_emo.csv", "../MELD.Raw/dev_splits_complete/", val_audio_emb, name="val", visual_features=False)
-train_dataset = MELDDataset("../MELD.Raw/train_sent_emo.csv", "../MELD.Raw/train_splits/", train_audio_emb, name="train", visual_features=False, )
+train_dataset = MELDDataset("../MELD.Raw/train_sent_emo.csv", "../MELD.Raw/train_splits/", train_audio_emb, name="train", config=config, )
+#params = train_dataset.find_audio_stats()
+#train_dataset.apply_audio_transform(params)
+val_dataset = MELDDataset("../MELD.Raw/dev_sent_emo.csv", "../MELD.Raw/dev_splits_complete/", val_audio_emb, name="val", config=config)
+#val_dataset.apply_audio_transform(params)
 
 if config.eval_on_test:
     train_dataset = ConcatDataset([train_dataset, val_dataset])
-test_dataset = MELDDataset("../MELD.Raw/test_sent_emo.csv", "../MELD.Raw/output_repeated_splits_test", test_audio_emb, name="test", visual_features=False)
+test_dataset = MELDDataset("../MELD.Raw/test_sent_emo.csv", "../MELD.Raw/output_repeated_splits_test", test_audio_emb, name="test", config=config)
+#test_dataset.apply_audio_transform(params)
 
 def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentiment, train_data_loader, val_data_loader):
     # dummpy value of 0as a lower bound for the accuracy
