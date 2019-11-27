@@ -16,8 +16,9 @@ class Config:
         self.att_window_size = 10
         self.lr=0.0005 
         self.l2=0.00001
-        self.eval_on_test=True
+        self.eval_on_test=False
         self.num_epochs = 1
         self.use_meld_audio=False
         self.use_our_audio=False
+        self.use_texts=True
 

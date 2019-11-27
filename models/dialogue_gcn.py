@@ -12,15 +12,24 @@ class DialogueGCN(nn.Module):
 
     def __init__(self, config):
         super(DialogueGCN, self).__init__()
-        self.use_meld_audio = config.use_meld_audio
+        self.config = config
         self.att_window_size = config.att_window_size
         self.utt_embed_size = config.utt_embed_size
         self.text_encoder = nn.GRU(config.text_in_dim, config.text_out_dim, bidirectional=True, batch_first=True)
-        if self.use_meld_audio:
-            self.context_encoder = nn.GRU(config.context_in_dim * 3, config.context_out_dim, bidirectional=True, batch_first=True)#        
+        if self.config.use_meld_audio or self.config.use_our_audio:
+            if self.config.config.use_texts:
+                self.context_encoder = nn.GRU(config.context_in_dim * 3, config.context_out_dim, bidirectional=True, batch_first=True)
+            else:
+                self.context_encoder = nn.GRU(config.context_in_dim * 1, config.context_out_dim, bidirectional=True, batch_first=True)
+            self.audio_rnn = nn.GRU(41, 50, bidirectional=True, batch_first=True)
+            self.audio_W = nn.Linear(1422, config.audio_out_dim, bias=True)
+            self.audio_attn = nn.Linear(100, 1, bias=False)
+            self.conv1_mel = nn.Conv2d(1, 30, 3, stride=2, padding=2)
+            self.conv2_mel = nn.Conv2d(30 , 1, 3, stride=2, padding=2)
+            self.conv1_mfcc = nn.Conv2d(1, 30, 3, stride=2,padding=2)
+            self.conv2_mfcc = nn.Conv2d(30 , 1, 3, stride=2, padding=2)            
         else:
-            self.context_encoder = nn.GRU(config.context_in_dim * 2, config.context_out_dim, bidirectional=True, batch_first=True)#        
-        self.audio_W = nn.Linear(config.audio_in_dim, config.audio_out_dim, bias=True)
+            self.context_encoder = nn.GRU(config.context_in_dim * 2, config.context_out_dim, bidirectional=True, batch_first=True)#
 #        self.vis_W = nn.Linear(config.vis_in_dim, config.vis_out_dim, bias=True)
         self.pred_rel_l1 = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
         self.suc_rel_l1 = GraphConvolution(self.utt_embed_size, self.utt_embed_size, bias=False)
@@ -35,7 +44,6 @@ class DialogueGCN(nn.Module):
         self.w_aggr_1 = nn.Parameter(torch.FloatTensor(self.utt_embed_size*2, self.utt_embed_size*2))
         self.w_aggr_2 = nn.Parameter(torch.FloatTensor(self.utt_embed_size*2, self.utt_embed_size*2))
         
-        self.w_reduce = nn.Linear(1422, config.context_in_dim)
         self.text_attn = nn.Linear(self.utt_embed_size * 2, 1)
         self.w_sentiment = nn.Linear(self.utt_embed_size*4, 3)
         self.w_emotion_1 = nn.Linear(self.utt_embed_size*4, self.utt_embed_size*2)
@@ -46,22 +54,34 @@ class DialogueGCN(nn.Module):
         for param in self.bert.parameters():
             param.requires_grad = False
 
-        self.face_module = FaceModule()
+        #self.face_module = FaceModule()
 
     def forward(self, x):
         transcripts, video, audio, speakers = x
         speakers.squeeze_(0)
         #print(self.pred_rel_l1.weight[300:350, 300:400])
-        indept_embeds = self.embed_text(transcripts)
-        if self.use_meld_audio:
+        if self.config.use_texts:
+            indept_embeds = self.embed_text(transcripts)
+        if self.config.use_meld_audio:
             audio = torch.stack(audio, dim=1).float().to('cuda')
-            audio = torch.relu(self.w_reduce(audio))        
-            indept_embeds = torch.cat([indept_embeds, audio], dim=2)
+            audio = torch.relu(self.audio_W(audio))      
+            if self.config.use_texts:
+                indept_embeds = torch.cat([indept_embeds, audio], dim=2)
+            else:
+                indept_embeds = audio            
+        elif self.config.use_our_audio:
+            audio = self.embed_audio(audio)
+            if self.config.config.use_texts:
+                indept_embeds = torch.cat([indept_embeds, audio], dim=2)
+            else:
+                indept_embeds = audio
+                
         context_embeds = self.context_encoder(indept_embeds)[0].squeeze(0)
-        face_embeds = self.face_module(video)
+        #face_embeds = self.face_module(video)
         relation_matrices = self.construct_edges_relations(context_embeds, speakers)
         pred_adj, suc_adj, same_speak_adj, diff_adj_matrix, attn = relation_matrices
-        #print(context_embeds[:, 300:330])                                        
+        #print(context_embeds[:, 300:330])  
+        
         h1 = self.pred_rel_l1(context_embeds, pred_adj)
         h1 += self.suc_rel_l1(context_embeds, suc_adj)
         h1 += self.same_speak_rel_l1(context_embeds, same_speak_adj)
@@ -74,7 +94,7 @@ class DialogueGCN(nn.Module):
         h2 += self.diff_speak_rel_l2(h1, diff_adj_matrix)
         h2 = torch.relu(h2 + torch.matmul(h1, self.w_aggr_2) * attn.diag().unsqueeze(1))
         h = torch.cat([h2, context_embeds], dim=1)
-
+        
         return self.w_emotion_2(torch.relu(self.w_emotion_1(h))), self.w_sentiment(h)
 
     def embed_text(self, utterances):
@@ -96,7 +116,6 @@ class DialogueGCN(nn.Module):
         texts = texts[sorted_idx]
         # Pack -> rnn -> unpack (to handle variable-length sequences)
         texts = pack_padded_sequence(texts, lengths=sorted_lengths, batch_first=True)
-        encoded_text = self.text_encoder(texts)[0]
         encoded_text = pad_packed_sequence(self.text_encoder(texts)[0], batch_first=True)[0]
         # Attention over word sequences
         averaged_vectors = []
@@ -112,7 +131,44 @@ class DialogueGCN(nn.Module):
         _, orig_idx = sorted_idx.sort(0)
         encoded_text = encoded_text[orig_idx].unsqueeze(0)
         return encoded_text    
-        
+
+    def embed_audio(self, audio):
+        lengths = []
+        audios = []
+#        print("audio size ", len(audio))
+        for i, utt in enumerate(audio):
+            melspec, mfcc = utt[0], utt[1]
+            melspec = melspec.reshape(melspec.size(-1), -1).to('cuda').unsqueeze(0).unsqueeze(0)
+            mfcc = mfcc.reshape(mfcc.size(-1), -1).to('cuda').unsqueeze(0).unsqueeze(0)
+            melspec = self.conv2_mel(torch.relu(self.conv1_mel(melspec))).squeeze(0).squeeze(0)
+            mfcc = self.conv2_mfcc(torch.relu(self.conv1_mfcc(mfcc))).squeeze(0).squeeze(0)
+            audio_feat = torch.cat([melspec, mfcc], dim=1)
+            audios.append(audio_feat)
+            lengths.append(audio_feat.size(0))
+        audios = pad_sequence(audios, batch_first=True)
+        lengths = torch.LongTensor(lengths)
+        # Sort utterance transcripts in decreasing order by the number of words
+        sorted_lengths, sorted_idx = lengths.sort(descending=True)
+        audios = audios[sorted_idx]
+        # Pack -> rnn -> unpack (to handle variable-length sequences)
+        audios = pack_padded_sequence(audios, lengths=sorted_lengths, batch_first=True)
+        encoded_audio = pad_packed_sequence(self.audio_rnn(audios)[0], batch_first=True)[0]
+        # Attention over word sequences
+        averaged_vectors = []
+        for i, seq in enumerate(encoded_audio):
+            audio_vecs = seq[0:sorted_lengths[i], :]
+            audio_raw_attn = self.audio_attn(audio_vecs)
+            audio_attn = torch.softmax(audio_raw_attn, dim=0)
+            att_vec = audio_vecs * audio_attn
+            #print(att_vec, att_vec.sum(dim=0).size())
+            averaged_vectors.append(att_vec.sum(dim=0))
+        encoded_audio = torch.stack(averaged_vectors, dim=0)
+        # Sorts back to original order
+        _, orig_idx = sorted_idx.sort(0)
+        encoded_audio = encoded_audio[orig_idx].unsqueeze(0)
+        #print(encoded_audio.size())
+        return encoded_audio    
+    
     def construct_edges_relations(self, ut_embs, speaker_ids):
         # ut_embs is a tensor of size N x D
         #   N - number of utterances
@@ -130,27 +186,10 @@ class DialogueGCN(nn.Module):
                 attn[i, j] = curr_utt.dot(ut_embs[j])
         # TODO: Problematic: zero elements pull nonzero attention weights
         attn = torch.softmax(attn, dim=1)
-        relation_matrices = self.build_relation_matrices_2(ut_embs, speaker_ids, attn)
+        relation_matrices = self.build_relation_matrices(ut_embs, speaker_ids, attn)
         return relation_matrices
     
     def build_relation_matrices(self, ut_embs, speaker_ids, attn_mask):
-        num_utt = len(ut_embs)
-        #print("Number of utterances: ", num_utt)
-        num_speakers = len(np.unique(speaker_ids))
-        pred_adj = torch.ones(num_utt, num_utt, dtype=torch.long).triu(0).to("cuda")
-        suc_adj = 1 - pred_adj.byte()
-        same_adj_matrix = torch.zeros(num_utt, num_utt, dtype=torch.long).to("cuda")
-        for i in range(num_speakers):
-            same_speak_indices = speaker_ids == i
-            same_adj_matrix[same_speak_indices] = same_speak_indices.long().to("cuda")
-        diff_adj_matrix = 1 - same_adj_matrix.byte()
-        pred_adj = pred_adj.float() * attn_mask
-        suc_adj = suc_adj.float() * attn_mask
-        same_adj_matrix = same_adj_matrix.float() * attn_mask
-        diff_adj_matrix = diff_adj_matrix.float() * attn_mask
-        return pred_adj, suc_adj, same_adj_matrix, diff_adj_matrix, attn_mask
-
-    def build_relation_matrices_2(self, ut_embs, speaker_ids, attn_mask):
         num_utt = len(ut_embs)
         #print("Number of utterances: ", num_utt)
         num_speakers = len(np.unique(speaker_ids))
@@ -161,10 +200,8 @@ class DialogueGCN(nn.Module):
             same_speak_indices = speaker_ids == i
             same_adj_matrix[same_speak_indices] = same_speak_indices.long().to("cuda")
         diff_adj_matrix = 1 - same_adj_matrix.byte()
-        pred_adj = pred_adj.float() * attn_mask
-        suc_adj = suc_adj.float() * attn_mask
-        same_adj_pred = same_adj_matrix.float() * pred_adj * attn_mask
-        same_adj_post = same_adj_matrix.float() * suc_adj * attn_mask
-        diff_adj_pred = diff_adj_matrix.float() * pred_adj * attn_mask
-        diff_adj_post = diff_adj_matrix.float() * suc_adj * attn_mask
+        same_adj_pred = same_adj_matrix.float() * pred_adj.float() * attn_mask
+        same_adj_post = same_adj_matrix.float() * suc_adj.float() * attn_mask
+        diff_adj_pred = diff_adj_matrix.float() * pred_adj.float() * attn_mask
+        diff_adj_post = diff_adj_matrix.float() * suc_adj.float() * attn_mask
         return same_adj_pred, same_adj_post, diff_adj_pred, diff_adj_post, attn_mask
