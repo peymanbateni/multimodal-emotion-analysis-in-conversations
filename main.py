@@ -28,6 +28,7 @@ else:
     #audio_embed_path = "../MELD.Features.Models/features/audio_embeddings_feature_selection_emotion.pkl"
     audio_embed_path = "../MELD.Raw/audio_embeddings_feature_selection_sentiment.pkl"
     train_audio_emb, val_audio_emb, test_audio_emb = pickle.load(open(audio_embed_path, 'rb'))
+
 train_dataset = MELDDataset("../MELD.Raw/train_sent_emo.csv", "../MELD.Raw/train_splits/", train_audio_emb, name="train", config=config, )
 #params = train_dataset.find_audio_stats()
 #train_dataset.apply_audio_transform(params)
@@ -250,7 +251,7 @@ if config.model_type == 'dialoguegcn':
     model = DialogueGCN(config)
     model = model.to("cuda")
 elif config.model_type == 'fan':
-    model = ExpressionDetector(config.fan_weights_path)
+    model = ExpressionDetector(config.fan_weights_path, config.face_matching)
     model = model.to("cuda")
 elif config.model_type == 'acn':
     model = AttentionConvWrapper()

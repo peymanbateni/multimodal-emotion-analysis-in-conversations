@@ -180,7 +180,7 @@ class Utterance(object):
         Loads the video into memory and converts the frames into a pyTorch tensor
         """
         #print(self.file_path)
-        return ''#video_to_tensor(self.file_path)
+        return video_to_tensor(self.file_path)
 
     def get_cached_visual_features(self, max_persons=7, output_size=224, sampling_rate=30, display_images=False):
 
@@ -195,6 +195,7 @@ class Utterance(object):
             #print("No cached features found, generating new features for dialogue: {}, utterance: {} ({}, {}, {})".format(self.dialogue_id, self.utterance_id, max_persons, sampling_rate, output_size))
             video_tensor = self.load_video()
             face_vector = detect_faces_mtcnn(video_tensor, max_persons, output_size, sampling_rate, display_images)
+            #return face_vector
             torch.save(face_vector, file_path)
         #else:
             #print("Retrieved cached visual features for dialogue: {}, utterance: {} ({}, {}, {})".format(self.dialogue_id, self.utterance_id, max_persons, sampling_rate, output_size))

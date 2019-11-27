@@ -33,3 +33,5 @@ Epoch[0/14] - batch 400 Error: 586.1938160955906
 Epoch[0/14] - batch 500 Error: 725.827840462327
 Epoch[0/14] - batch 600 Error: 866.5838492959738
 Epoch[0/14] - batch 700 Error: 1011.8325151950121
+Epoch[0/14] - batch 800 Error: 1157.0069125443697
+Epoch[0/14] - batch 900 Error: 1300.9526333361864

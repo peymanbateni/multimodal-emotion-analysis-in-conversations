@@ -5,6 +5,7 @@ import cv2
 from PIL import Image
 from torch_mtcnn import detect_faces
 import torch
+from torchvision.transforms import ToPILImage
 import os
 from facenet_pytorch_local.models.mtcnn import MTCNN
 from facenet_pytorch_local.models.inception_resnet_v1 import InceptionResnetV1
@@ -66,11 +67,12 @@ def detect_faces_mtcnn(video_tensor, max_persons=7, output_size=160, sampling_ra
     # back to torch tensor within the method, TODO: optimize data flow to
     # avoid type casting
 
+    image_converter = ToPILImage()
+
     video = []
     for image in video_tensor[::sampling_rate]:
-        image_np = image.numpy()
-        image_pil = Image.fromarray(image_np)
-        video.append(image_pil)
+        #print(image.shape)
+        video.append(image_converter(image.permute(2, 0, 1)))
     #print(len(video))
     #print(video[0].size)
 

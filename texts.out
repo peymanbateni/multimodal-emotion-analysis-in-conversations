@@ -35,3 +35,20 @@ Epoch[0/8] - batch 600 Error: 871.4210236817598
 Epoch[0/8] - batch 700 Error: 1005.8785224109888
 Epoch[0/8] - batch 800 Error: 1144.0438337177038
 Epoch[0/8] - batch 900 Error: 1275.7689612954855
+Epoch[0/8] - batch 1000 Error: 1416.1695680767298
+Epoch[0/8] - batch 1100 Error: 1544.2604952305555
+/scratch/grigorii/tools/anaconda3/lib/python3.7/site-packages/sklearn/metrics/classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 in labels with no predicted samples.
+  'precision', 'predicted', average, warn_for)
+torch.Size([1109, 2])
+torch.Size([1109])
+torch.Size([1109])
+Validation Accuracy (Emotion):  0.503155996393147
+F1 Weighted 0.44187161740776876
+Confusion matrix [[ 55   4   0   0   2  48  54]
+ [ 36  10   0   0   1  57  49]
+ [  0   0   0   0   1  12   9]
+ [  5   5   0   0   2  12  16]
+ [ 10   4   0   0   7  66  24]
+ [ 10   2   0   0   2 377  79]
+ [ 18   3   0   0   0  20 109]]
+Epoch[1/8] - batch 0 Error: 1.6137791872024536

@@ -9,8 +9,9 @@ class Config:
         self.audio_out_dim = 100
         self.vis_in_dim = 100
         self.vis_out_dim = 100
-        self.model_type = 'dialoguegcn' # 'dialoguegcn', 'dialoguegcn','fan' 'acn'
+        self.model_type = 'dialoguegcn' # 'fan', 'dialoguegcn','fan' 'acn'
         self.fan_weights_path = './parameters/Resnet18_FER+_pytorch.pth.tar'
+        self.face_matching = True
         self.utt_embed_size = 100
         self.att_window_size = 10
         self.lr=0.0005 
