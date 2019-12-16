@@ -17,7 +17,15 @@ from models import visual_features
 from models import attention_convolution_network
 from facenet_pytorch_local.models.inception_resnet_v1 import InceptionResnetV1
 
+class FCProj(torch.nn.Module):
+    def __init__(self, input_size, output_size):
+        super(FCProj, self).__init__()
+        self.linear1 = torch.nn.Linear(input_size, input_size)
+        self.linear2 = torch.nn.Linear(input_size, output_size)
+        self.elu = torch.nn.ELU()
 
+    def forward(self, x):
+        return self.linear2(self.elu(self.linear1(x)))
 
 def load_parameter(_structure, _parameterDir):
 
@@ -52,7 +60,11 @@ class ExpressionDetector(torch.nn.Module):
         if self.face_matching:
             self.resnet = InceptionResnetV1(pretrained='vggface2').eval()
 
-        print(self.frame_attention_network)
+        self.attention_network = FCProj(7, 7)
+        self.classifier = torch.nn.Linear(7,7) #FCProj(512, 7)
+        #self.projector = torch.nn.Linear(512, 100)
+        self.softmax = torch.nn.Softmax()
+        #print(self.frame_attention_network)
         #self.face_detecor = visual_features.FaceModule()
 
     def get_face_matchings(self, face_tensor):
@@ -131,7 +143,7 @@ class ExpressionDetector(torch.nn.Module):
             aligned_tensor.append(ordered_tensor)   
 
         aligned_tensor = torch.stack(aligned_tensor)
-        return aligned_tensor
+        return aligned_tensor.unsqueeze(0)
 
         # SAVE IMAGES FOR DEBUGGING PURPOSES:
 
@@ -147,7 +159,9 @@ class ExpressionDetector(torch.nn.Module):
 
 
     def forward(self, x):
-        transcript, faces_vector, audio, speakers = x
+        #transcript, faces_vector, audio, speakers = x
+
+        faces_vector = x
         # USING FACE DETECTOR 
         
         #faces_vector = self.face_detecor(videos)
@@ -155,30 +169,36 @@ class ExpressionDetector(torch.nn.Module):
         for i, faces in enumerate(faces_vector):
             # note each of these is all the faces in one utterances (N, C, W, H)
             if (faces.size(1) != 0):
-                if self.face_matching and faces.size(1) > 1:
-                    faces = self.get_face_matchings(faces)
-                faces = faces.cuda()
-                print("faces size", faces.size())
-                print(faces.is_cuda)
-                emotions = self.frame_attention_network(faces.squeeze(0))
-                print(emotions.size())
-                summed_emotions = torch.sum(emotions, axis=0)
-                print(summed_emotions.size())
-            #print(len(faces))
-            #print(emotions)
-            #print(summed_emotions)
-                emotion_output.append(summed_emotions.unsqueeze(0))
-                faces = faces.cpu()
+                #if self.face_matching and faces.size(1) > 1:
+                #    faces = self.get_face_matchings(faces)
+
+                _, N, F, C, W, H = faces.shape
+                faces = faces.view(F, N, C, W, H).cuda()
+                #print("faces size", faces.size())
+                #print(faces.is_cuda)
+                #emotions = self.frame_attention_network(faces.squeeze(0))
+                #print(emotions.size())
+                #summed_emotions = torch.sum(emotions, axis=0)
+                #print(summed_emotions.size())
+                #emotion_output.append(summed_emotions.unsqueeze(0))
+                emotions = self.frame_attention_network(faces)
+                #print(emotions.shape)
+                attention_weights = self.softmax(self.attention_network(emotions))
+                #print(attention_weights.shape)
+                #print(emotions.shape)
+                predicted_emotions = torch.bmm(torch.t(attention_weights).unsqueeze(1), torch.t(emotions).unsqueeze(2))
+                #predicted_emotions = self.classifier(summed_emotions)
+                emotion_output.append(predicted_emotions.view(1, F)) #summed_emotions.unsqueeze(0))
             else:
                 emotion_output.append(torch.zeros(1, 7).cuda())
 
-        print(len(emotion_output))
+        #print(len(emotion_output))
 
         # placeholder:
         sentiment_output = torch.zeros(len(emotion_output), 3).cuda()
         emotion_output = torch.cat(emotion_output, dim=0)
-        print("EMOTION", emotion_output.size())
-        print("SENTIMENT", sentiment_output.size())
+        #print("EMOTION", emotion_output.size())
+        #print("SENTIMENT", sentiment_output.size())
         return emotion_output, sentiment_output
 
 class AttentionConvWrapper(torch.nn.Module):

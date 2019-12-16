@@ -295,6 +295,20 @@ if config.model_type == 'dummy':
 optimisation_unit = optim.Adam(model.parameters(), lr=config.lr, weight_decay=config.l2)
 
 for i in range(1):
+    #print('Loading from checkpoint')
+    #checkpoint = torch.load('model_saves/text_audio0_epoch_image_only_13.pt')
+    #optimisation_unit.load_state_dict(checkpoint['optimizer_state_dict'])
+    #model.load_state_dict(checkpoint['model_state_dict'])
+    #Validation Accuracy (Emotion):  0.6221821460775473
+    #F1 Weighted 0.5703736482358079
+    #Confusion matrix [[100   1   0   1   0  56   5]
+    # [ 36  31   0   0   3  71  12]
+    # [  0   1   4   0   0  14   3]
+    # [  3   2   0  12   1  14   8]
+    # [ 11   0   0   1  11  81   7]
+    # [ 14   0   0   0   0 437  19]
+    # [ 24   2   0   0   0  29  95]]
+    
     train_and_validate(model_name + str(i), model, optimisation_unit, emotion_criterion, sentiment_criterion, train_loader, val_loader)
     test_model(model_name + str(i), model, test_loader)
 torch.save({'model_state_dict': model.state_dict()}, 'model_saves/' + model_name + "_" + run_id)

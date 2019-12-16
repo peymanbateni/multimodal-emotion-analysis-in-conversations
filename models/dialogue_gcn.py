@@ -6,6 +6,7 @@ from torch.nn.parameter import Parameter
 from transformers import BertModel, BertTokenizer
 from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence, pad_packed_sequence, PackedSequence
 from models.visual_features import FaceModule
+from models.expression_detector import ExpressionDetector
 
 
 class DialogueGCN(nn.Module):
@@ -16,15 +17,17 @@ class DialogueGCN(nn.Module):
         self.sentiment_model = sentiment_model
         self.utt_embed_size = config.utt_embed_size
         self.text_encoder = nn.GRU(config.text_in_dim, config.text_out_dim, bidirectional=True, batch_first=True)
-        if self.config.use_meld_audio or self.config.use_our_audio:
-            if self.config.use_texts:
-                self.context_encoder = nn.GRU(config.text_out_dim * 2 + config.audio_out_dim, config.context_out_dim, bidirectional=True, batch_first=True)
-            else:
-                self.context_encoder = nn.GRU(config.audio_out_dim, config.context_out_dim, bidirectional=True, batch_first=True)
+        context_in_dim = 0
+        if config.use_texts:
+            context_in_dim += 2 * config.text_out_dim
+        if config.use_meld_audio or config.use_our_audio:
+            context_in_dim += config.audio_out_dim
             self.audio_W = nn.Linear(config.audio_in_dim, config.audio_out_dim, bias=True)
-            self.audio_rnn = nn.Linear(config.audio_out_dim, int(config.audio_out_dim / 2), bias=True)
-        else:
-            self.context_encoder = nn.GRU(config.text_out_dim * 2, config.context_out_dim, bidirectional=True, batch_first=True)#
+            self.audio_rnn = nn.Linear(config.audio_out_dim, int(config.audio_out_dim / 2), bias=True)          
+        if config.use_visual:
+            context_in_dim += 10
+        self.context_encoder = nn.GRU(context_in_dim, config.context_out_dim, bidirectional=True, batch_first=True)
+  
         self.pred_rel_l1 = GraphConvolution(self.config.utt_embed_size, self.config.utt_embed_size, bias=False)
         self.suc_rel_l1 = GraphConvolution(self.config.utt_embed_size, self.config.utt_embed_size, bias=False)
         self.same_speak_rel_l1 = GraphConvolution(self.config.utt_embed_size, self.config.utt_embed_size, bias=False)
@@ -53,11 +56,12 @@ class DialogueGCN(nn.Module):
         for param in self.bert.parameters():
             param.requires_grad = False
 
-        self.face_module = FaceModule()
+        self.visual_model = ExpressionDetector(config.fan_weights_path, face_matching=True)
 
     def forward(self, x):
         transcripts, video, audio, speakers = x
         speakers.squeeze_(0)
+        indept_embeds = None
         if self.config.use_texts:
             indept_embeds = self.embed_text(transcripts)
         if self.config.use_meld_audio:
@@ -75,6 +79,14 @@ class DialogueGCN(nn.Module):
                 indept_embeds = torch.cat([indept_embeds, audio], dim=2)
             else:
                 indept_embeds = audio
+
+        if self.config.use_visual:
+            visual_embeds, sent_embeds = self.visual_model(video)
+            if indept_embeds is not None:
+                indept_embeds = torch.cat([indept_embeds, visual_embeds.unsqueeze(0), sent_embeds.unsqueeze(0)], dim=2)
+            else:
+                indept_embeds = torch.cat([visual_embeds.unsqueeze(0), sent_embeds.unsqueeze(0)], dim=2)
+            
         context_embeds = self.context_encoder(indept_embeds)[0].squeeze(0)
         face_embeds = self.face_module(video)
         relation_matrices = self.construct_edges_relations(context_embeds, speakers)

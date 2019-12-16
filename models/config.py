@@ -17,7 +17,7 @@ class Config:
         self.att_window_size = 10
         self.lr=0.0005 
         self.l2=0.00001
-        self.eval_on_test=False
+        self.eval_on_test=True
         self.num_epochs = num_epochs
         self.use_meld_audio=use_meld_audio
         self.use_our_audio=use_our_audio
@@ -26,6 +26,7 @@ class Config:
         self.use_clean_audio=False
         self.use_sentiment=False
         self.use_texts=use_texts
-        self.visual_features=False
+        self.use_visual=True
+        self.visual_features=True
         #self.save_model=True
 

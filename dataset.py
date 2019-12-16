@@ -13,12 +13,18 @@ from models.visual_features import detect_faces_mtcnn
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import LinearSVC
+from torchvision.transforms import ToPILImage
+from facenet_pytorch_local.models.mtcnn import MTCNN
+from facenet_pytorch_local.models.inception_resnet_v1 import InceptionResnetV1
 
-def video_to_tensor(video_file):
+mtcnn_model = MTCNN(image_size=224, margin=0, keep_all=True)
+facenet_model = InceptionResnetV1(pretrained='vggface2').eval().to("cuda")
+
+def video_to_tensor(video_file, sampling_rate=30):
     """ Converts a mp4 file into a pytorch tensor"""
 
     cap = cv2.VideoCapture(video_file)
-    frameCount = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    frameCount = int(cap.get(cv2.CAP_PROP_FRAME_COUNT) / sampling_rate)
     frameWidth = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     frameHeight = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
@@ -28,7 +34,9 @@ def video_to_tensor(video_file):
     ret = True
 
     while (fc < frameCount  and ret):
-        ret, buf[fc] = cap.read()
+        ret, frame = cap.read()
+        if fc % sampling_rate == 0:
+            buf[fc] = frame
         fc += 1
 
     cap.release()
@@ -182,7 +190,111 @@ class Utterance(object):
         #print(self.file_path)
         return ""#video_to_tensor(self.file_path)
 
+    def get_face_frames(self, video_tensor, max_persons=7, output_size=224):
+
+        threshold = 1.25
+
+        #mtcnn = MTCNN(image_size=output_size, margin=0, keep_all=True).to("cuda")
+
+        # Compiling sampling and pass into MTCNN
+
+        image_converter = ToPILImage()
+
+        #print("number of frames: {}".format(video_tensor.shape[0]))
+        #mtcnn_model = MTCNN(image_size=224, margin=0, keep_all=True).to("cuda")
+        #facenet_model = InceptionResnetV1(pretrained='vggface2').eval().to("cuda")
+
+        video = []
+        for image in video_tensor:
+            video.append(image_converter(image.permute(2, 0, 1)))
+
+        faces_vector = mtcnn_model(video)
+
+        if len(faces_vector) == 0:
+            #print("BIG WHOOPSIES")
+            return torch.zeros(0, 1, 3, output_size, output_size)
+
+        #resnet = InceptionResnetV1(pretrained='vggface2').eval().to("cuda")
+
+        embedding_vector = []
+        for frame in faces_vector:
+            if type(frame) == torch.Tensor:
+                embedding_vector.append(facenet_model(frame.to("cuda")))
+            else:
+                embedding_vector.append(torch.zeros(1, 512).to("cuda"))
+
+        #padded_embedding = torch.zeros(max_persons, 3, output_size, outputsize)
+        #padded_embedding[:embedding_vector[0].size] = embedding_vector[0]
+
+        aligned_embeddings = torch.zeros(len(faces_vector), max_persons, 512)
+        alignment_indices = torch.zeros(len(faces_vector), max_persons)
+        
+        # aligned_embeddings is (F x N x 512)
+        new_face_index = 0
+
+        for i, embedding in enumerate(embedding_vector):
+            # embedding is (F x 512)
+            embedding = embedding.to("cpu")
+            distances = torch.sum(((embedding.unsqueeze(1).unsqueeze(1) - aligned_embeddings.unsqueeze(0)) ** 2), dim=3)
+            # distances is (F x F x N)
+            distances = torch.mean(distances, dim=1)
+            # distances is (F x F)
+            indices = torch.zeros(max_persons)
+            for j, distance in enumerate(distances):
+                #distances 
+                min_dist, arg_min = torch.min(distance, dim=0)
+                if min_dist < threshold and indices[arg_min] < 1:
+                    indices[arg_min] = j + 1
+                    alignment_indices[i, arg_min] = j + 1
+                else:
+                    new_face_index += 1 
+                    if new_face_index < max_persons:
+                        indices[new_face_index] = j + 1
+                        alignment_indices[i, new_face_index] = j + 1
+
+            padded_embedding = torch.cat([torch.zeros(1, 512), embedding], dim=0)
+            aligned_embedding = torch.index_select(padded_embedding, 0, indices.long())
+            aligned_embeddings[i, : aligned_embedding.shape[0]] =  aligned_embedding
+
+
+        aligned_faces = []
+        for i, faces in enumerate(faces_vector):
+            if type(faces) == torch.Tensor:
+                padding = torch.zeros(1, 3, output_size, output_size)
+                padded_faces = torch.cat([padding, faces], dim=0)
+                aligned_faces.append(torch.index_select(padded_faces, 0, alignment_indices[i].long()).unsqueeze(0))
+            else:
+                aligned_faces.append(torch.zeros(1, 7, 3, output_size, output_size))
+
+        aligned_faces = torch.cat(aligned_faces, dim=0)
+        #print(aligned_faces.shape)
+
+        """
+        if aligned_faces.shape[0] > 4:
+            # save to output
+            # aligned_faces = (N x F x C x W x H)
+            N, F, C, W, H = aligned_faces.shape
+            images = aligned_faces.reshape(F, C, N * W, H)
+            #print(images.shape)
+            image_array = []
+            for image in images:
+                image_array.append(image_converter(image))
+
+            for i, img in enumerate(image_array):
+                file_path = "test/face_{}.jpeg".format(i)
+                img.save(file_path)
+        """
+
+        return aligned_faces.detach()
+
     def get_cached_visual_features(self, max_persons=7, output_size=224, sampling_rate=30, display_images=False):
+
+        video_tensor = self.load_video()
+        #face_vector = detect_faces_mtcnn(video_tensor.to("cpu"), max_persons, output_size, 1, display_images)
+        face_vector = self.get_face_frames(video_tensor, max_persons, output_size)
+
+        #print(face_vector.shape)
+        return face_vector
 
         cache_path = './cache'
         setting_path = os.path.join(cache_path, 'persons_{}_rate_{}_size_{}'.format(max_persons, sampling_rate, output_size))
@@ -194,9 +306,9 @@ class Utterance(object):
         if not os.path.exists(file_path):
             #print("No cached features found, generating new features for dialogue: {}, utterance: {} ({}, {}, {})".format(self.dialogue_id, self.utterance_id, max_persons, sampling_rate, output_size))
             video_tensor = self.load_video()
-            face_vector = detect_faces_mtcnn(video_tensor, max_persons, output_size, sampling_rate, display_images)
-            #return face_vector
-            torch.save(face_vector, file_path)
+            face_vector = detect_faces_mtcnn(video_tensor, max_persons, output_size, 1, display_images)
+            return face_vector
+            #torch.save(face_vector, file_path)
         #else:
             #print("Retrieved cached visual features for dialogue: {}, utterance: {} ({}, {}, {})".format(self.dialogue_id, self.utterance_id, max_persons, sampling_rate, output_size))
         #print(torch.load(file_path))
