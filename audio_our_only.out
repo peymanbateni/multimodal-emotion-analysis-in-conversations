@@ -1,0 +1,419 @@
+/scratch/grigorii/tools/anaconda3/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:516: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_qint8 = np.dtype([("qint8", np.int8, 1)])
+/scratch/grigorii/tools/anaconda3/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:517: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_quint8 = np.dtype([("quint8", np.uint8, 1)])
+/scratch/grigorii/tools/anaconda3/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:518: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_qint16 = np.dtype([("qint16", np.int16, 1)])
+/scratch/grigorii/tools/anaconda3/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:519: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_quint16 = np.dtype([("quint16", np.uint16, 1)])
+/scratch/grigorii/tools/anaconda3/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:520: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_qint32 = np.dtype([("qint32", np.int32, 1)])
+/scratch/grigorii/tools/anaconda3/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:525: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  np_resource = np.dtype([("resource", np.ubyte, 1)])
+/scratch/grigorii/tools/anaconda3/lib/python3.7/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:541: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_qint8 = np.dtype([("qint8", np.int8, 1)])
+/scratch/grigorii/tools/anaconda3/lib/python3.7/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:542: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_quint8 = np.dtype([("quint8", np.uint8, 1)])
+/scratch/grigorii/tools/anaconda3/lib/python3.7/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:543: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_qint16 = np.dtype([("qint16", np.int16, 1)])
+/scratch/grigorii/tools/anaconda3/lib/python3.7/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:544: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_quint16 = np.dtype([("quint16", np.uint16, 1)])
+/scratch/grigorii/tools/anaconda3/lib/python3.7/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:545: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_qint32 = np.dtype([("qint32", np.int32, 1)])
+/scratch/grigorii/tools/anaconda3/lib/python3.7/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:550: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  np_resource = np.dtype([("resource", np.ubyte, 1)])
+{'joy': 0, 'anger': 1, 'disgust': 2, 'fear': 3, 'sadness': 4, 'neutral': 5, 'surprise': 6}
+{'joy': 0, 'anger': 1, 'disgust': 2, 'fear': 3, 'sadness': 4, 'neutral': 5, 'surprise': 6}
+=== Constructing train dataset audio statistics ===
+FIXED (9989, 6373)
+False
+(400, 6373) (9989, 400)
+0.8072692082455653 [0.14357034 0.08090664 0.05566054 0.03172291 0.02821943 0.023885
+ 0.02006184 0.01699304 0.01260145 0.01059396 0.01016183 0.00892294
+ 0.00837865 0.00744012 0.00660504 0.00627403 0.00616683 0.00543595
+ 0.0051323  0.00492496 0.00470831 0.00451778 0.00426633 0.00419511
+ 0.00390583 0.00364482 0.00351441 0.00342713 0.00321689 0.00317068]
+=== Finished audio statistics ===
+Applying audio feature transforms to  train
+0
+100
+200
+300
+400
+500
+600
+700
+800
+900
+1000
+Applied audio feature transform to  train
+Applying audio feature transforms to  val
+0
+100
+Applied audio feature transform to  val
+{'joy': 0, 'anger': 1, 'disgust': 2, 'fear': 3, 'sadness': 4, 'neutral': 5, 'surprise': 6}
+Applying audio feature transforms to  test
+0
+100
+200
+Applied audio feature transform to  test
+Epoch[0/15] - batch 0 Error: 2.0005710124969482
+Epoch[0/15] - batch 100 Error: 158.1758319735527
+Epoch[0/15] - batch 200 Error: 312.8063014149666
+Epoch[0/15] - batch 300 Error: 464.3705363869667
+Epoch[0/15] - batch 400 Error: 616.369145154953
+Epoch[0/15] - batch 500 Error: 764.5066945254803
+Epoch[0/15] - batch 600 Error: 916.572679489851
+Epoch[0/15] - batch 700 Error: 1064.828698426485
+Epoch[0/15] - batch 800 Error: 1216.98928591609
+Epoch[0/15] - batch 900 Error: 1363.6467302143574
+Epoch[0/15] - batch 1000 Error: 1511.8430268466473
+/scratch/grigorii/tools/anaconda3/lib/python3.7/site-packages/sklearn/metrics/classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 in labels with no predicted samples.
+  'precision', 'predicted', average, warn_for)
+torch.Size([1109, 2])
+torch.Size([1109])
+torch.Size([1109])
+Validation Accuracy (Emotion):  0.4526600541027953
+F1 Weighted 0.3253765685519401
+Confusion matrix [[ 12  11   0   0   0 140   0]
+ [ 12  33   0   0   0 108   0]
+ [  0   2   0   0   0  20   0]
+ [  2   5   0   0   0  33   0]
+ [  6   5   0   0   0 100   0]
+ [  3  10   0   0   0 455   2]
+ [  9  10   0   0   0 129   2]]
+Epoch[1/15] - batch 0 Error: 1.478650450706482
+Epoch[1/15] - batch 100 Error: 129.6000336483121
+Epoch[1/15] - batch 200 Error: 269.7666169181466
+Epoch[1/15] - batch 300 Error: 409.03229150921106
+Epoch[1/15] - batch 400 Error: 534.1103961840272
+Epoch[1/15] - batch 500 Error: 670.9372135773301
+Epoch[1/15] - batch 600 Error: 817.5601966753602
+Epoch[1/15] - batch 700 Error: 957.1446304097772
+Epoch[1/15] - batch 800 Error: 1097.578923739493
+Epoch[1/15] - batch 900 Error: 1251.4097873941064
+Epoch[1/15] - batch 1000 Error: 1390.5267148390412
+torch.Size([1109, 2])
+torch.Size([1109])
+torch.Size([1109])
+Validation Accuracy (Emotion):  0.4436429215509468
+F1 Weighted 0.35384828196264034
+Confusion matrix [[ 35   6   0   0   0 117   5]
+ [ 30  26   0   0   0  91   6]
+ [  3   2   0   0   0  16   1]
+ [  8   0   0   0   0  32   0]
+ [ 17   4   0   0   0  87   3]
+ [ 39   8   0   0   0 416   7]
+ [ 31   1   0   0   0 103  15]]
+Epoch[2/15] - batch 0 Error: 1.0895130634307861
+Epoch[2/15] - batch 100 Error: 128.23803117871284
+Epoch[2/15] - batch 200 Error: 250.77852502465248
+Epoch[2/15] - batch 300 Error: 372.5592651963234
+Epoch[2/15] - batch 400 Error: 495.051185965538
+Epoch[2/15] - batch 500 Error: 625.0071033239365
+Epoch[2/15] - batch 600 Error: 750.0242037773132
+Epoch[2/15] - batch 700 Error: 871.2123596146703
+Epoch[2/15] - batch 800 Error: 993.0185248032212
+Epoch[2/15] - batch 900 Error: 1124.7981378212571
+Epoch[2/15] - batch 1000 Error: 1246.743827842176
+torch.Size([1109, 2])
+torch.Size([1109])
+torch.Size([1109])
+Validation Accuracy (Emotion):  0.4454463480613165
+F1 Weighted 0.3572192674725733
+Confusion matrix [[  8  30   0   0   1 112  12]
+ [ 10  58   0   0   0  80   5]
+ [  3   5   0   0   0  13   1]
+ [  1   9   0   0   0  27   3]
+ [  9  11   0   0   3  85   3]
+ [ 11  41   0   0   2 405  11]
+ [  7  27   0   0   1  95  20]]
+Epoch[3/15] - batch 0 Error: 1.3314807415008545
+Epoch[3/15] - batch 100 Error: 113.80557024478912
+Epoch[3/15] - batch 200 Error: 217.40962398052216
+Epoch[3/15] - batch 300 Error: 320.0197586584836
+Epoch[3/15] - batch 400 Error: 438.57431528903544
+Epoch[3/15] - batch 500 Error: 555.4638646636158
+Epoch[3/15] - batch 600 Error: 663.5412092152983
+Epoch[3/15] - batch 700 Error: 776.5363500756212
+Epoch[3/15] - batch 800 Error: 887.2714722496457
+Epoch[3/15] - batch 900 Error: 1001.0921994862147
+Epoch[3/15] - batch 1000 Error: 1119.8705272045918
+torch.Size([1109, 2])
+torch.Size([1109])
+torch.Size([1109])
+Validation Accuracy (Emotion):  0.40937781785392247
+F1 Weighted 0.350411793663804
+Confusion matrix [[ 33  11   0   0   1  93  25]
+ [ 25  23   0   0   0  73  32]
+ [  4   3   0   0   0  11   4]
+ [  4   3   0   0   0  27   6]
+ [ 18   8   0   0   2  75   8]
+ [ 36  24   0   0   9 361  40]
+ [ 23  10   0   0   1  81  35]]
+Epoch[4/15] - batch 0 Error: 1.5413914918899536
+Epoch[4/15] - batch 100 Error: 89.11713263648562
+Epoch[4/15] - batch 200 Error: 165.46381029710756
+Epoch[4/15] - batch 300 Error: 262.6403552639822
+Epoch[4/15] - batch 400 Error: 356.69838144027744
+Epoch[4/15] - batch 500 Error: 464.42483441674267
+Epoch[4/15] - batch 600 Error: 568.9158652490296
+Epoch[4/15] - batch 700 Error: 660.5075499685772
+Epoch[4/15] - batch 800 Error: 753.044799794472
+Epoch[4/15] - batch 900 Error: 857.2447323883243
+Epoch[4/15] - batch 1000 Error: 954.67642682328
+torch.Size([1109, 2])
+torch.Size([1109])
+torch.Size([1109])
+Validation Accuracy (Emotion):  0.38683498647430115
+F1 Weighted 0.36027938374533824
+Confusion matrix [[ 41  23   0   3   2  73  21]
+ [ 26  57   0   4   1  53  12]
+ [  5   3   0   0   0  10   4]
+ [  3  11   0   0   0  22   4]
+ [ 18  20   0   1   9  57   6]
+ [ 62  55   0   5  17 296  35]
+ [ 27  28   0   4   3  62  26]]
+Epoch[5/15] - batch 0 Error: 0.2540048062801361
+Epoch[5/15] - batch 100 Error: 73.56686309080396
+Epoch[5/15] - batch 200 Error: 154.9253295072267
+Epoch[5/15] - batch 300 Error: 238.11298130684008
+Epoch[5/15] - batch 400 Error: 313.41949179104995
+Epoch[5/15] - batch 500 Error: 397.84767280538654
+Epoch[5/15] - batch 600 Error: 486.83022898331546
+Epoch[5/15] - batch 700 Error: 574.7098351920795
+Epoch[5/15] - batch 800 Error: 664.1434723242492
+Epoch[5/15] - batch 900 Error: 742.209286518053
+Epoch[5/15] - batch 1000 Error: 832.0815516390212
+torch.Size([1109, 2])
+torch.Size([1109])
+torch.Size([1109])
+Validation Accuracy (Emotion):  0.3435527502254283
+F1 Weighted 0.3311761324595029
+Confusion matrix [[ 56  15   0   6   6  66  14]
+ [ 52  41   0   4   7  46   3]
+ [  8   2   0   0   1  10   1]
+ [  8   8   0   1   0  20   3]
+ [ 37   8   0   4  11  47   4]
+ [111  45   2   9  31 255  17]
+ [ 49  14   0   5   4  61  17]]
+Epoch[6/15] - batch 0 Error: 0.44959238171577454
+Epoch[6/15] - batch 100 Error: 73.35089048277587
+Epoch[6/15] - batch 200 Error: 140.23183034414615
+Epoch[6/15] - batch 300 Error: 207.3145571722016
+Epoch[6/15] - batch 400 Error: 274.1863067749691
+Epoch[6/15] - batch 500 Error: 352.255247908648
+Epoch[6/15] - batch 600 Error: 426.9123461925615
+Epoch[6/15] - batch 700 Error: 494.66629049710036
+Epoch[6/15] - batch 800 Error: 573.0036796232112
+Epoch[6/15] - batch 900 Error: 652.540335615015
+Epoch[6/15] - batch 1000 Error: 732.5056679399227
+torch.Size([1109, 2])
+torch.Size([1109])
+torch.Size([1109])
+Validation Accuracy (Emotion):  0.39224526600541026
+F1 Weighted 0.34612658818872843
+Confusion matrix [[ 12  18   2   1   4 101  25]
+ [ 12  49   0   5   2  69  16]
+ [  3   2   0   0   0  13   4]
+ [  2   8   0   0   1  25   4]
+ [ 10  17   1   3   9  63   8]
+ [ 23  49   3   7  17 333  38]
+ [ 10  19   0   4   7  78  32]]
+Epoch[7/15] - batch 0 Error: 1.1902475357055664
+Epoch[7/15] - batch 100 Error: 53.130246011358395
+Epoch[7/15] - batch 200 Error: 111.52876775871846
+Epoch[7/15] - batch 300 Error: 177.42056811589282
+Epoch[7/15] - batch 400 Error: 237.63858815550338
+Epoch[7/15] - batch 500 Error: 304.4382162890033
+Epoch[7/15] - batch 600 Error: 371.020003174518
+Epoch[7/15] - batch 700 Error: 428.94721552341457
+Epoch[7/15] - batch 800 Error: 476.0619877043564
+Epoch[7/15] - batch 900 Error: 541.5566430937479
+Epoch[7/15] - batch 1000 Error: 615.2452421663072
+torch.Size([1109, 2])
+torch.Size([1109])
+torch.Size([1109])
+Validation Accuracy (Emotion):  0.35166816952209196
+F1 Weighted 0.3330892896628639
+Confusion matrix [[ 25  20   8   1   7  84  18]
+ [ 31  51   0   1   2  60   8]
+ [  6   2   1   0   1  10   2]
+ [  6   9   1   1   0  20   3]
+ [ 16  18   6   1  15  50   5]
+ [ 63  59   6   2  35 275  30]
+ [ 22  26   4   2   8  66  22]]
+Epoch[8/15] - batch 0 Error: 0.9177623391151428
+Epoch[8/15] - batch 100 Error: 45.20344273458409
+Epoch[8/15] - batch 200 Error: 91.45578644300235
+Epoch[8/15] - batch 300 Error: 152.74039249839768
+Epoch[8/15] - batch 400 Error: 202.386744412261
+Epoch[8/15] - batch 500 Error: 255.90494729119143
+Epoch[8/15] - batch 600 Error: 313.4488992373857
+Epoch[8/15] - batch 700 Error: 373.62021898230785
+Epoch[8/15] - batch 800 Error: 422.0281534404217
+Epoch[8/15] - batch 900 Error: 484.8590626624005
+Epoch[8/15] - batch 1000 Error: 546.6338724760303
+torch.Size([1109, 2])
+torch.Size([1109])
+torch.Size([1109])
+Validation Accuracy (Emotion):  0.3678990081154193
+F1 Weighted 0.33288587581820617
+Confusion matrix [[ 20  16   5   1   8  95  18]
+ [ 22  48   1   1   2  66  13]
+ [  4   2   0   0   0  12   4]
+ [  3   8   0   1   0  22   6]
+ [ 20  19   4   0   5  58   5]
+ [ 47  54   2   0  16 307  44]
+ [ 15  29   1   3   7  68  27]]
+Epoch[9/15] - batch 0 Error: 0.4374035894870758
+Epoch[9/15] - batch 100 Error: 38.21024997568884
+Epoch[9/15] - batch 200 Error: 83.2064125065358
+Epoch[9/15] - batch 300 Error: 130.18175204325098
+Epoch[9/15] - batch 400 Error: 176.7230162051078
+Epoch[9/15] - batch 500 Error: 227.6798615031753
+Epoch[9/15] - batch 600 Error: 276.3234518807849
+Epoch[9/15] - batch 700 Error: 322.27295712378907
+Epoch[9/15] - batch 800 Error: 378.645824638857
+Epoch[9/15] - batch 900 Error: 433.196034883134
+Epoch[9/15] - batch 1000 Error: 491.2164500640449
+torch.Size([1109, 2])
+torch.Size([1109])
+torch.Size([1109])
+Validation Accuracy (Emotion):  0.39404869251578
+F1 Weighted 0.36516327655097547
+Confusion matrix [[ 22  30   5   0   6  80  20]
+ [ 17  73   1   3   3  46  10]
+ [  5   3   1   0   1  10   2]
+ [  3  13   0   1   0  19   4]
+ [ 14  23   4   1  11  53   5]
+ [ 50  61   6   4  20 301  28]
+ [ 18  22   4   2   3  73  28]]
+Epoch[10/15] - batch 0 Error: 0.8697123527526855
+Epoch[10/15] - batch 100 Error: 35.4990148154169
+Epoch[10/15] - batch 200 Error: 71.00976813981686
+Epoch[10/15] - batch 300 Error: 112.65655853437698
+Epoch[10/15] - batch 400 Error: 152.98950809495037
+Epoch[10/15] - batch 500 Error: 202.89877524190533
+Epoch[10/15] - batch 600 Error: 242.02497221460007
+Epoch[10/15] - batch 700 Error: 287.94132980447694
+Epoch[10/15] - batch 800 Error: 330.2021258420259
+Epoch[10/15] - batch 900 Error: 374.9477472473509
+Epoch[10/15] - batch 1000 Error: 431.12951127855865
+torch.Size([1109, 2])
+torch.Size([1109])
+torch.Size([1109])
+Validation Accuracy (Emotion):  0.3525698827772768
+F1 Weighted 0.3413140659448686
+Confusion matrix [[ 32  12   4   0   2  87  26]
+ [ 41  35   5   4   2  46  20]
+ [  5   3   1   0   0   9   4]
+ [  7   7   0   1   0  17   8]
+ [ 28  12   2   0  13  45  11]
+ [ 71  41   5   1  11 269  72]
+ [ 29  18   3   2   3  55  40]]
+Epoch[11/15] - batch 0 Error: 8.106231689453125e-05
+Epoch[11/15] - batch 100 Error: 35.69100164863539
+Epoch[11/15] - batch 200 Error: 73.8777560597594
+Epoch[11/15] - batch 300 Error: 112.55329221774113
+Epoch[11/15] - batch 400 Error: 148.6425828335817
+Epoch[11/15] - batch 500 Error: 182.04510873842023
+Epoch[11/15] - batch 600 Error: 219.27424591386293
+Epoch[11/15] - batch 700 Error: 260.0229982296019
+Epoch[11/15] - batch 800 Error: 317.2331874467064
+Epoch[11/15] - batch 900 Error: 363.3773507832288
+Epoch[11/15] - batch 1000 Error: 409.94589011410943
+torch.Size([1109, 2])
+torch.Size([1109])
+torch.Size([1109])
+Validation Accuracy (Emotion):  0.35888187556357076
+F1 Weighted 0.3418293198559604
+Confusion matrix [[ 41   9   2   0   5  84  22]
+ [ 41  26   1   7   6  50  22]
+ [  5   3   1   0   0  10   3]
+ [  6   4   0   1   0  20   9]
+ [ 22  12   1   0  13  54   9]
+ [ 69  28   3   4  24 277  65]
+ [ 34  10   1   3   4  59  39]]
+Epoch[12/15] - batch 0 Error: 0.0010138239013031125
+Epoch[12/15] - batch 100 Error: 25.939306075239074
+Epoch[12/15] - batch 200 Error: 63.15388836934403
+Epoch[12/15] - batch 300 Error: 96.50604673814382
+Epoch[12/15] - batch 400 Error: 132.00686355586436
+Epoch[12/15] - batch 500 Error: 169.74164270998915
+Epoch[12/15] - batch 600 Error: 210.78483374575478
+Epoch[12/15] - batch 700 Error: 253.71520455367414
+Epoch[12/15] - batch 800 Error: 291.8536002678364
+Epoch[12/15] - batch 900 Error: 329.6323013848147
+Epoch[12/15] - batch 1000 Error: 364.9937215562257
+torch.Size([1109, 2])
+torch.Size([1109])
+torch.Size([1109])
+Validation Accuracy (Emotion):  0.35437330928764654
+F1 Weighted 0.32288140231156237
+Confusion matrix [[ 31  17   2   1   6  91  15]
+ [ 38  35   0   8   3  63   6]
+ [  3   3   0   1   0  12   3]
+ [  8   4   0   1   1  22   4]
+ [ 17  15   0   6   8  59   6]
+ [ 62  51   1  10  13 302  31]
+ [ 30  16   2   3   6  77  16]]
+Epoch[13/15] - batch 0 Error: 0.5933762192726135
+Epoch[13/15] - batch 100 Error: 30.705953161332218
+Epoch[13/15] - batch 200 Error: 56.35362574089754
+Epoch[13/15] - batch 300 Error: 81.9623546182453
+Epoch[13/15] - batch 400 Error: 110.00774826561032
+Epoch[13/15] - batch 500 Error: 147.55342430594305
+Epoch[13/15] - batch 600 Error: 180.99663888323732
+Epoch[13/15] - batch 700 Error: 222.73505603434285
+Epoch[13/15] - batch 800 Error: 260.13723947221615
+Epoch[13/15] - batch 900 Error: 294.63003578668713
+Epoch[13/15] - batch 1000 Error: 327.8991956333559
+torch.Size([1109, 2])
+torch.Size([1109])
+torch.Size([1109])
+Validation Accuracy (Emotion):  0.3624887285843102
+F1 Weighted 0.33523749440185946
+Confusion matrix [[ 36  19   3   1   5  82  17]
+ [ 29  38   1   4   4  63  14]
+ [  2   2   1   1   0  10   6]
+ [  6   7   0   0   0  21   6]
+ [ 19  12   1   3   8  57  11]
+ [ 55  48   3   7  15 295  47]
+ [ 18  21   2   4   2  79  24]]
+Epoch[14/15] - batch 0 Error: 0.0
+Epoch[14/15] - batch 100 Error: 30.394112639130014
+Epoch[14/15] - batch 200 Error: 56.14795906583362
+Epoch[14/15] - batch 300 Error: 86.92319755317115
+Epoch[14/15] - batch 400 Error: 119.20373845638788
+Epoch[14/15] - batch 500 Error: 152.143701338649
+Epoch[14/15] - batch 600 Error: 189.3017228386854
+Epoch[14/15] - batch 700 Error: 221.50476016529933
+Epoch[14/15] - batch 800 Error: 250.9259009052156
+Epoch[14/15] - batch 900 Error: 279.66375074672055
+Epoch[14/15] - batch 1000 Error: 318.1833613157678
+torch.Size([1109, 2])
+torch.Size([1109])
+torch.Size([1109])
+Validation Accuracy (Emotion):  0.3534715960324617
+F1 Weighted 0.3369962112115442
+Confusion matrix [[ 43  14   2   1  10  83  10]
+ [ 37  36   1   5  12  50  12]
+ [  6   2   0   1   3   8   2]
+ [  4   7   0   0   2  23   4]
+ [ 25   8   0   1  19  50   8]
+ [ 85  48   3   3  33 271  27]
+ [ 35  19   0   1   5  67  23]]
+Testing audio_text_ours0
+torch.Size([2610, 2])
+torch.Size([2610])
+torch.Size([2610])
+Validation Accuracy (Emotion):  0.3911877394636015
+F1 Weighted 0.38197269963257796
+Confusion matrix [[ 87  37   3   4  30 196  45]
+ [ 80  79   2   8  36 118  22]
+ [ 16  11   0   2   3  30   6]
+ [  3  11   3   0   3  25   5]
+ [ 32  19   1   1  42  91  22]
+ [207  74   7  16  82 767 103]
+ [ 53  22   3   4  19 134  46]]
