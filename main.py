@@ -11,34 +11,49 @@ from models.dialogue_gcn import DialogueGCN
 from torch.utils.data import ConcatDataset
 from sklearn.metrics import f1_score, confusion_matrix
 from models.expression_detector import ExpressionDetector, AttentionConvWrapper
+from models.sentiment_model import BERTGRUSentiment
+from transformers import BertModel, BertTokenizer
 
-import os 
-os.environ["CUDA_VISIBLE_DEVICES"] ="1"
 
+import sys 
 
-config = Config()
+use_texts = int(sys.argv[1]) == 1
+use_our_audio = int(sys.argv[2]) == 1
+use_meld_audio = int(sys.argv[3]) == 1
+num_epochs = int(sys.argv[4])
+model_name = sys.argv[5]
+run_id = sys.argv[6]
+config = Config(use_texts, use_our_audio, use_meld_audio, num_epochs)
+
 if config.use_our_audio:
-    audio_embed_path_train = "../MELD.Raw/train_audio.pkl"
-    audio_embed_path_val = "../MELD.Raw/dev_audio.pkl"
-    audio_embed_path_test = "../MELD.Raw/test_audio.pkl"
+    if config.use_clean_audio:
+        audio_embed_path_train = "../MELD.Raw/train_audio_clean.pkl"
+        audio_embed_path_val = "../MELD.Raw/val_audio_clean.pkl"
+        audio_embed_path_test = "../MELD.Raw/test_audio_clean.pkl"
+    else:
+        audio_embed_path_train = "../MELD.Raw/train_audio.pkl"
+        audio_embed_path_val = "../MELD.Raw/dev_audio.pkl"
+        audio_embed_path_test = "../MELD.Raw/test_audio.pkl"
     train_audio_emb = pickle.load(open(audio_embed_path_train, 'rb'))
     val_audio_emb = pickle.load(open(audio_embed_path_val, 'rb'))
     test_audio_emb = pickle.load(open(audio_embed_path_test, 'rb'))
 else:    
-    #audio_embed_path = "../MELD.Features.Models/features/audio_embeddings_feature_selection_emotion.pkl"
-    audio_embed_path = "../MELD.Raw/audio_embeddings_feature_selection_sentiment.pkl"
+    audio_embed_path = "../MELD.Raw/audio_embeddings_feature_selection_emotion.pkl"
+    #audio_embed_path = "../MELD.Raw/audio_embeddings_feature_selection_sentiment.pkl"
     train_audio_emb, val_audio_emb, test_audio_emb = pickle.load(open(audio_embed_path, 'rb'))
 
 train_dataset = MELDDataset("../MELD.Raw/train_sent_emo.csv", "../MELD.Raw/train_splits/", train_audio_emb, name="train", config=config, )
-#params = train_dataset.find_audio_stats()
-#train_dataset.apply_audio_transform(params)
 val_dataset = MELDDataset("../MELD.Raw/dev_sent_emo.csv", "../MELD.Raw/dev_splits_complete/", val_audio_emb, name="val", config=config)
-#val_dataset.apply_audio_transform(params)
+if use_our_audio or use_meld_audio:
+    params = train_dataset.find_audio_stats(use_our_audio)
+    train_dataset.apply_audio_transform(params, use_our_audio)
+    val_dataset.apply_audio_transform(params, use_our_audio)
 
 if config.eval_on_test:
     train_dataset = ConcatDataset([train_dataset, val_dataset])
 test_dataset = MELDDataset("../MELD.Raw/test_sent_emo.csv", "../MELD.Raw/output_repeated_splits_test", test_audio_emb, name="test", config=config)
-#test_dataset.apply_audio_transform(params)
+if use_our_audio or use_meld_audio:
+    test_dataset.apply_audio_transform(params, use_our_audio)
 
 def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentiment, train_data_loader, val_data_loader):
     # dummpy value of 0as a lower bound for the accuracy
@@ -46,6 +61,7 @@ def train_and_validate(model_name, model, optimiser, loss_emotion, loss_sentimen
     num_of_no_improvements = 0
     for epoch in range(config.num_epochs):
         model = model.train()
+        model.bert.eval()
         loss_acc = 0
         total_epoch_loss = 0
         for i, (batch_input, batch_labels) in enumerate(train_data_loader):
@@ -188,7 +204,7 @@ def test_model(model_name, model, test_loader):
     sentiment_target_labels = torch.cat(sentiment_target_labels, 0)
     target_labels = torch.cat([emotion_target_labels.unsqueeze(1), sentiment_target_labels.unsqueeze(1)], 1).cuda()
 
-    emotion_f1_score = f1_score(emotion_target_labels.cpu().numpy(), emotion_predicted_labels.cpu().numpy(), average='weighted')        
+    emotion_f1_score = f1_score(emotion_target_labels.cpu().numpy(), emotion_predicted_labels.cpu().numpy(), average='weighted')
     confusion = confusion_matrix(emotion_target_labels.cpu().numpy(), emotion_predicted_labels.cpu().numpy())
     emotion_accuracy, sentiment_accuracy = get_accuracy(emotion_predicted_labels, sentiment_predicted_labels, target_labels)
     #emotion_recalls, sentiment_recalls = get_recall_for_each_class(emotion_predicted_labels, sentiment_predicted_labels, target_labels)
@@ -233,22 +249,35 @@ def test_step(model, input, target):
     #return emotion_accuracy_acc, sentiment_accuracy_acc, target[0].size(0)
     return output_labels_emotion, output_labels_sentiment, target[0].size()
 
-dumb_model = DummyModel()
 emotion_criterion = nn.CrossEntropyLoss()
 sentiment_criterion = nn.CrossEntropyLoss()
-model_name = "text_audio"
-#train_loader = DataLoader(train_dataset, batch_size=100, shuffle=True)
-#val_loader = DataLoader(val_dataset, batch_size=100, shuffle=True)
-#test_loader = DataLoader(test_dataset, batch_size=100, shuffle=True)
+model_name = "audio_text_ours"
 
-#train_and_validate(model_name, dumb_model, optimisation_unit, emotion_criterion, sentiment_criterion, train_loader, val_loader)
-#test_model(model_name, dumb_model, test_loader)
 train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=1, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=1, shuffle=True)
+bert = BertModel.from_pretrained('bert-base-uncased')
+
+if config.use_sentiment:
+    HIDDEN_DIM = 256
+    OUTPUT_DIM = 1
+    N_LAYERS = 2
+    BIDIRECTIONAL = True
+    DROPOUT = 0
+    sentiment_model = BERTGRUSentiment(bert,
+                         HIDDEN_DIM,
+                         OUTPUT_DIM,
+                         N_LAYERS,
+                         BIDIRECTIONAL,
+                         DROPOUT)    
+    sentiment_model.load_state_dict(torch.load('models/sentiment_model.pt'))
+    for param in sentiment_model.parameters():
+        param.requires_grad = False
+else:
+    sentiment_model = None
 
 if config.model_type == 'dialoguegcn':
-    model = DialogueGCN(config)
+    model = DialogueGCN(config, bert, sentiment_model)
     model = model.to("cuda")
 elif config.model_type == 'fan':
     model = ExpressionDetector(config.fan_weights_path, config.face_matching)
@@ -268,3 +297,4 @@ optimisation_unit = optim.Adam(model.parameters(), lr=config.lr, weight_decay=co
 for i in range(1):
     train_and_validate(model_name + str(i), model, optimisation_unit, emotion_criterion, sentiment_criterion, train_loader, val_loader)
     test_model(model_name + str(i), model, test_loader)
+torch.save({'model_state_dict': model.state_dict()}, 'model_saves/' + model_name + "_" + run_id)

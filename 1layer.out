@@ -25,13 +25,4 @@
 {'joy': 0, 'anger': 1, 'disgust': 2, 'fear': 3, 'sadness': 4, 'neutral': 5, 'surprise': 6}
 {'joy': 0, 'anger': 1, 'disgust': 2, 'fear': 3, 'sadness': 4, 'neutral': 5, 'surprise': 6}
 {'joy': 0, 'anger': 1, 'disgust': 2, 'fear': 3, 'sadness': 4, 'neutral': 5, 'surprise': 6}
-Epoch[0/14] - batch 0 Error: 1.9503579139709473
-Epoch[0/14] - batch 100 Error: 156.91674143075943
-Epoch[0/14] - batch 200 Error: 308.45506995916367
-Epoch[0/14] - batch 300 Error: 448.01365496218204
-Epoch[0/14] - batch 400 Error: 586.1938160955906
-Epoch[0/14] - batch 500 Error: 725.827840462327
-Epoch[0/14] - batch 600 Error: 866.5838492959738
-Epoch[0/14] - batch 700 Error: 1011.8325151950121
-Epoch[0/14] - batch 800 Error: 1157.0069125443697
-Epoch[0/14] - batch 900 Error: 1300.9526333361864
+Epoch[0/1] - batch 0 Error: 1.950886845588684
