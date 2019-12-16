@@ -88,7 +88,6 @@ class DialogueGCN(nn.Module):
                 indept_embeds = torch.cat([visual_embeds.unsqueeze(0), sent_embeds.unsqueeze(0)], dim=2)
             
         context_embeds = self.context_encoder(indept_embeds)[0].squeeze(0)
-        face_embeds = self.face_module(video)
         relation_matrices = self.construct_edges_relations(context_embeds, speakers)
         
         pred_adj, suc_adj, same_speak_adj, diff_adj_matrix, attn = relation_matrices
