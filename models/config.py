@@ -1,5 +1,5 @@
 class Config:
-    def __init__(self, use_texts, use_our_audio, use_meld_audio, num_epochs):
+    def __init__(self, use_texts, use_our_audio, use_meld_audio, num_epochs, use_visual):
         self.text_in_dim = 768
         self.text_out_dim = 50
         if use_meld_audio:
@@ -26,7 +26,7 @@ class Config:
         self.use_clean_audio=False
         self.use_sentiment=False
         self.use_texts=use_texts
-        self.use_visual=True
-        self.visual_features=True
+        self.use_visual=use_visual
+        self.visual_features=use_visual
         #self.save_model=True
 

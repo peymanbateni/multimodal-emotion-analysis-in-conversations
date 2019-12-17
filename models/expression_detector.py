@@ -60,7 +60,7 @@ class ExpressionDetector(torch.nn.Module):
         if self.face_matching:
             self.resnet = InceptionResnetV1(pretrained='vggface2').eval()
 
-        self.attention_network = FCProj(7, 7)
+        self.attention_network = FCProj(512, 512)
         self.classifier = torch.nn.Linear(7,7) #FCProj(512, 7)
         #self.projector = torch.nn.Linear(512, 100)
         self.softmax = torch.nn.Softmax()
@@ -188,9 +188,9 @@ class ExpressionDetector(torch.nn.Module):
                 #print(emotions.shape)
                 predicted_emotions = torch.bmm(torch.t(attention_weights).unsqueeze(1), torch.t(emotions).unsqueeze(2))
                 #predicted_emotions = self.classifier(summed_emotions)
-                emotion_output.append(predicted_emotions.view(1, F)) #summed_emotions.unsqueeze(0))
+                emotion_output.append(predicted_emotions.view(1, 512)) #summed_emotions.unsqueeze(0))
             else:
-                emotion_output.append(torch.zeros(1, 7).cuda())
+                emotion_output.append(torch.zeros(1, 512).cuda())
 
         #print(len(emotion_output))
 

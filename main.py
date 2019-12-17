@@ -20,10 +20,11 @@ import sys
 use_texts = int(sys.argv[1]) == 1
 use_our_audio = int(sys.argv[2]) == 1
 use_meld_audio = int(sys.argv[3]) == 1
-num_epochs = int(sys.argv[4])
-model_name = sys.argv[5]
-run_id = sys.argv[6]
-config = Config(use_texts, use_our_audio, use_meld_audio, num_epochs)
+use_visual = int(sys.argv[4]) == 1
+num_epochs = int(sys.argv[5])
+model_name = sys.argv[6]
+run_id = sys.argv[7]
+config = Config(use_texts, use_our_audio, use_meld_audio, num_epochs, use_visual)
 
 if config.use_our_audio:
     if config.use_clean_audio:

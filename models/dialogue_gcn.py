@@ -25,7 +25,7 @@ class DialogueGCN(nn.Module):
             self.audio_W = nn.Linear(config.audio_in_dim, config.audio_out_dim, bias=True)
             self.audio_rnn = nn.Linear(config.audio_out_dim, int(config.audio_out_dim / 2), bias=True)          
         if config.use_visual:
-            context_in_dim += 10
+            context_in_dim += 100
         self.context_encoder = nn.GRU(context_in_dim, config.context_out_dim, bidirectional=True, batch_first=True)
   
         self.pred_rel_l1 = GraphConvolution(self.config.utt_embed_size, self.config.utt_embed_size, bias=False)
@@ -50,6 +50,7 @@ class DialogueGCN(nn.Module):
         self.w_emotion_2 = nn.Linear(self.utt_embed_size, 7)
         self.w_embed_sentiment = nn.Linear(512, 100)
         self.w_sentiment = nn.Linear(self.utt_embed_size*2, 7)
+        self.w_visual = nn.Linear(512, 100)
         
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
         self.bert = bert
@@ -79,13 +80,12 @@ class DialogueGCN(nn.Module):
                 indept_embeds = torch.cat([indept_embeds, audio], dim=2)
             else:
                 indept_embeds = audio
-
         if self.config.use_visual:
             visual_embeds, sent_embeds = self.visual_model(video)
             if indept_embeds is not None:
-                indept_embeds = torch.cat([indept_embeds, visual_embeds.unsqueeze(0), sent_embeds.unsqueeze(0)], dim=2)
+                indept_embeds = torch.cat([indept_embeds, self.w_visual(visual_embeds.unsqueeze(0))], dim=2)
             else:
-                indept_embeds = torch.cat([visual_embeds.unsqueeze(0), sent_embeds.unsqueeze(0)], dim=2)
+                indept_embeds = self.w_visual(visual_embeds.unsqueeze(0))
             
         context_embeds = self.context_encoder(indept_embeds)[0].squeeze(0)
         relation_matrices = self.construct_edges_relations(context_embeds, speakers)
@@ -176,7 +176,6 @@ class DialogueGCN(nn.Module):
         # Sorts back to original order
         _, orig_idx = sorted_idx.sort(0)
         encoded_audio = encoded_audio[orig_idx].unsqueeze(0)
-        #print(encoded_audio.size())
         return encoded_audio    
     
     def construct_edges_relations(self, ut_embs, speaker_ids):

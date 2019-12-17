@@ -193,7 +193,7 @@ class ResNet_AT(nn.Module):
 
             if self.at_type == 'self-attention':
                 vm1 = self.dropout(vm1)
-                pred_score = self.pred_fc1(vm1)
+                pred_score = vm1#self.pred_fc1(vm1)
 
             if self.at_type == 'relation-attention':
                 output = self.dropout2(output)
@@ -233,7 +233,6 @@ class ResNet_AT(nn.Module):
                 alpha_beta = alphas_from1.mul(betas)
                 sum_alphabetas = index_matrix.mm(alpha_beta)  # [380,21570] * [21570,1] -> [380,1]
                 weightmean_catefc = index_matrix.mm(weight_catefc).div(sum_alphabetas)
-
                 weightmean_catefc = self.dropout2(weightmean_catefc)
                 pred_score = self.pred_fc2(weightmean_catefc)
 
@@ -241,8 +240,7 @@ class ResNet_AT(nn.Module):
 
             if AT_level == 'pred':
                 if self.at_type == 'self-attention':
-                    pred_score = self.pred_fc1(self.dropout(vm))
-
+                    pred_score = vm#self.pred_fc1(self.dropout(vm))
                 return pred_score
 
 ''' self-attention; relation-attention '''
