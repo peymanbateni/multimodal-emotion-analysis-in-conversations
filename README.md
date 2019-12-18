@@ -11,21 +11,5 @@ Frame Attention Network source: https://github.com/Open-Debin/Emotion-FAN
 - We've evaluated the papers provided under Literature in this repository.
 - While we're slightly slowed down by the upcoming CVPR deadline, and as a result, not quite where we wanted to be given the fact that we look at this project as more than just a project and something that could potentially turn into a paper, we expect to regain substantial speed after the deadline.
 
-# TODOS:
-- visual models, adding the videos to the set of inputs used for classification (Peyman)
-- adding audio features (Grig)
-- early stopping procedure for training (Peyman)
-- obtaining results for emotion-only, sentiment-only and both classified as the same time models (Peyman)
-- ~~check BERT (Grig)~~
-- start on writing the report (Willis)
-  - Intro
-  - Related work
-  - Dataset
-  - Early stage stuff on the Model
-  - Experimental setting?
-  - losses??
-
-# Notes
-TODO: special symbols not being parsed properly in get_transcript
-TODO: certain utterances have special designations eg. "All", "Monica and Rachael"
-CONCERN: utterance start/end times do not seem to be always precise (eg. # 721 in sent_dev_emo.csv)
+# Finished Product:
+- This project is complete. Report has been submitted!
