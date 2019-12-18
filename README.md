@@ -1,5 +1,5 @@
 # multimodal_conversational_analysis
-Signal processing course project! In this project, we aim to produce a model on conversational sentiment and emotion analysis that uses visual features in addition to the audio and textual features previously used. The goal of the project is to produce a novel model that (hopefully) achieves better results than the previously published works.
+Signal processing course project! In this project, we aim to produce a model on conversational sentiment and emotion analysis that uses visual features in addition to the audio and textual features previously used. The goal of the project was to produce a novel model that (hopefully) achieves better results than the previously published works. While this goal was not achieve, substantial exploration of novel architectural additions was performed, leading to a good guideline for future research.
 
 Pytorch Facenet source: https://github.com/timesler/facenet-pytorch
 
